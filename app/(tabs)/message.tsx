@@ -1,25 +1,38 @@
-// File: app/(tabs)/message.tsx
-
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-
+import { Stack } from 'expo-router';
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { EmptyState } from '../../components/ui/EmptyState';
 
-export default function MessageTab() {
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <EmptyState
-          icon="chat-bubble-outline"
-          title="Messages"
-          subtitle="This is a mock inbox. Hook this up to your real chat API later."
-        />
-      </View>
-    </SafeAreaView>
-  );
+export default function MessageScreen() {
+    return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.header}>
+                <Text style={styles.title}>Inbox</Text>
+            </View>
+            <EmptyState
+                title="No Messages"
+                message="You have no new messages at this time."
+                icon="message.fill"
+            />
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
-  container: { flex: 1, padding: 16, justifyContent: 'center' },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    header: {
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#0a7ea4',
+    },
 });

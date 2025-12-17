@@ -1,61 +1,34 @@
-// File: data/rooms.ts
-
 import { Room } from '../types/models';
 
 export const rooms: Room[] = [
   {
-    id: 'room-bali-std',
-    hotelId: 'hotel-bali-1',
-    name: 'Standard Room',
-    image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=80',
-    pricePerNight: 140,
+    id: 'r1',
+    hotelId: 'h1',
+    name: 'Ocean View Suite',
+    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427',
     capacity: 2,
-    bedType: 'Queen',
-    amenities: ['wifi', 'ac', 'tv', 'bath'],
-    refundable: true,
+    bedType: 'King Bed',
+    price: 350,
+    amenities: ['Ocean View', 'Balcony', 'Free Wifi', 'Bathtub']
   },
   {
-    id: 'room-bali-deluxe',
-    hotelId: 'hotel-bali-1',
-    name: 'Deluxe Ocean View',
-    image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=80',
-    pricePerNight: 190,
-    capacity: 3,
-    bedType: 'King',
-    amenities: ['wifi', 'ac', 'tv', 'balcony', 'minibar', 'bath'],
-    refundable: false,
-  },
-  {
-    id: 'room-sr-std',
-    hotelId: 'hotel-sr-1',
-    name: 'City Comfort',
-    image: 'https://images.unsplash.com/photo-1560067174-8943bdc73b21?auto=format&fit=crop&w=1200&q=80',
-    pricePerNight: 65,
-    capacity: 2,
-    bedType: 'Double',
-    amenities: ['wifi', 'ac', 'tv', 'bath'],
-    refundable: true,
-  },
-  {
-    id: 'room-tokyo-compact',
-    hotelId: 'hotel-tokyo-1',
-    name: 'Compact Double',
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
-    pricePerNight: 180,
-    capacity: 2,
-    bedType: 'Double',
-    amenities: ['wifi', 'ac', 'tv', 'bath'],
-    refundable: false,
-  },
-  {
-    id: 'room-alps-suite',
-    hotelId: 'hotel-alps-1',
-    name: 'Panorama Suite',
-    image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80',
-    pricePerNight: 220,
+    id: 'r2',
+    hotelId: 'h1',
+    name: 'Garden Villa',
+    image: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6',
     capacity: 4,
-    bedType: 'King',
-    amenities: ['wifi', 'ac', 'tv', 'balcony', 'bath'],
-    refundable: true,
+    bedType: '2 Queen Beds',
+    price: 550,
+    amenities: ['Private Pool', 'Garden', 'Living Room', 'Kitchenette']
   },
+  {
+    id: 'r3',
+    hotelId: 'h2',
+    name: 'Deluxe Room',
+    image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39',
+    capacity: 2,
+    bedType: 'Queen Bed',
+    price: 850,
+    amenities: ['City View', 'Minibar', 'Marble Bath', 'Room Service']
+  }
 ];

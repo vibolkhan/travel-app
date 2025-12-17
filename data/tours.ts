@@ -1,48 +1,39 @@
-// File: data/tours.ts
-
 import { Tour } from '../types/models';
 
 export const tours: Tour[] = [
   {
-    id: 'tour-angkor-sunrise',
-    destinationId: 'dest-siemreap',
-    title: 'Angkor Sunrise & Temples',
-    image: 'https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=1200&q=80',
-    rating: 4.9,
-    priceFrom: 25,
-    durationHours: 8,
-    groupSize: 12,
-    description: 'Start at sunrise, explore Angkor Wat and nearby masterpieces with a local guide.',
-    itinerary: ['Sunrise at Angkor Wat', 'Bayon Temple', 'Ta Prohm', 'Local lunch stop'],
-    included: ['Guide', 'Cold water', 'Hotel pickup'],
-    notIncluded: ['Temple pass', 'Meals'],
-  },
-  {
-    id: 'tour-bali-sunset',
-    destinationId: 'dest-bali',
-    title: 'Bali Sunset & Beach Clubs',
-    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-    rating: 4.6,
-    priceFrom: 45,
-    durationHours: 6,
+    id: 't1',
+    destinationId: '1',
+    name: 'Bali Temple & Waterfall Tour',
+    image: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2',
+    duration: '1 Day',
     groupSize: 10,
-    description: 'Hop between iconic beach spots and end with a legendary sunset view.',
-    itinerary: ['Beach stop', 'Hidden café', 'Beach club sunset', 'Photo session'],
-    included: ['Guide', 'Transport'],
-    notIncluded: ['Food & drinks'],
+    price: 65,
+    rating: 4.7,
+    description: 'Explore the most iconic temples and hidden waterfalls of Bali.',
+    itinerary: [
+      { day: 1, title: 'Morning', description: 'Visit Lempuyang Temple' },
+      { day: 1, title: 'Afternoon', description: 'Swim at Tirta Gangga' }
+    ],
+    included: ['Transport', 'Guide', 'Entrance Fees', 'Lunch'],
+    notIncluded: ['Tips']
   },
   {
-    id: 'tour-tokyo-night',
-    destinationId: 'dest-tokyo',
-    title: 'Tokyo Night Street Food',
-    image: 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&fit=crop&w=1200&q=80',
-    rating: 4.7,
-    priceFrom: 60,
-    durationHours: 3,
-    groupSize: 8,
-    description: 'A curated night walk for must-try bites and local hidden gems.',
-    itinerary: ['Izakaya alley', 'Ramen stop', 'Dessert spot'],
-    included: ['Guide'],
-    notIncluded: ['Food costs'],
-  },
+    id: 't2',
+    destinationId: '2',
+    name: 'Kyoto Cultural Immersion',
+    image: 'https://images.unsplash.com/photo-1492571350019-22de08371fd3',
+    duration: '3 Days',
+    groupSize: 6,
+    price: 450,
+    rating: 4.9,
+    description: 'A deep dive into Japanese traditions, tea ceremonies, and history.',
+    itinerary: [
+      { day: 1, title: 'Arashiyama', description: 'Bamboo Grove and Monkey Park' },
+      { day: 2, title: 'Gion', description: 'Geisha district walking tour' },
+      { day: 3, title: 'Fushimi Inari', description: 'Hike up the mountain' }
+    ],
+    included: ['Accommodation', 'High-speed Train', 'Meals', 'Workshops'],
+    notIncluded: ['Flights', 'Insurance']
+  }
 ];

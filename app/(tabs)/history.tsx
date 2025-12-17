@@ -1,97 +1,170 @@
-// File: app/(tabs)/history.tsx
-
-import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Chip } from '../../components/ui/Chip';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { hotels } from '../../data/hotels';
-import { tours } from '../../data/tours';
-import { useBookingStore } from '../../store/useBookingStore';
-import { formatShortDate } from '../../utils/dates';
-import { formatMoney } from '../../utils/money';
+import { useBooking } from '../../context/BookingContext';
+import { Booking } from '../../types/models';
 
-type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
-const tabs: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
+const TABS = ['Upcoming', 'Completed', 'Cancelled'] as const;
 
-export default function HistoryTab() {
-  const [tab, setTab] = useState<Tab>('Upcoming');
-  const bookings = useBookingStore((s) => s.bookings);
+export default function HistoryScreen() {
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Upcoming');
+    const { getBookingsByStatus } = useBooking();
+    const bookings = getBookingsByStatus(activeTab);
 
-  const filtered = useMemo(() => {
-    const status = tab.toLowerCase() as 'upcoming' | 'completed' | 'cancelled';
-    return bookings.filter((b) => b.status === status);
-  }, [bookings, tab]);
-
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Bookings</Text>
-
-        <View style={{ marginTop: 10 }}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={tabs}
-            keyExtractor={(x) => x}
-            renderItem={({ item }) => <Chip label={item} selected={item === tab} onPress={() => setTab(item)} />}
-          />
-        </View>
-
-        {filtered.length === 0 ? (
-          <View style={{ marginTop: 30 }}>
-            <EmptyState icon="event-note" title="No bookings here" subtitle="Your booking history will show up once you book a hotel or tour." />
-          </View>
-        ) : (
-          <FlatList
-            style={{ marginTop: 14 }}
-            data={filtered}
-            keyExtractor={(x) => x.id}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-            renderItem={({ item }) => {
-              const title =
-                item.kind === 'hotel'
-                  ? hotels.find((h) => h.id === item.itemId)?.name ?? 'Hotel'
-                  : tours.find((t) => t.id === item.itemId)?.title ?? 'Tour';
-
-              return (
-                <View style={styles.card}>
-                  <View style={styles.row}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>
-                      {title}
-                    </Text>
-                    <Text style={styles.badge}>{tab}</Text>
-                  </View>
-                  <Text style={styles.meta}>
-                    {formatShortDate(item.checkInISO)} → {formatShortDate(item.checkOutISO)} • {item.guests} guest(s)
-                  </Text>
-                  <View style={[styles.row, { marginTop: 10 }]}>
-                    <Text style={styles.total}>{formatMoney(item.total)}</Text>
-                    <Pressable style={styles.smallBtn} onPress={() => {}}>
-                      <Text style={styles.smallBtnText}>Details</Text>
-                    </Pressable>
-                  </View>
+    const renderBookingItem = ({ item }: { item: Booking }) => (
+        <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.9}
+            onPress={() => router.push(`/booking/${item.id}`)}
+        >
+            <Image
+                source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+                style={styles.image}
+            />
+            <View style={styles.content}>
+                <View style={styles.headerRow}>
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <View style={[styles.typeBadge, { backgroundColor: item.type === 'Hotel' ? '#e3f2fd' : '#f3e5f5' }]}>
+                        <Text style={[styles.typeText, { color: item.type === 'Hotel' ? '#1565c0' : '#7b1fa2' }]}>{item.type}</Text>
+                    </View>
                 </View>
-              );
-            }}
-          />
-        )}
-      </View>
-    </SafeAreaView>
-  );
+                <Text style={styles.date}>{item.startDate} {item.endDate ? `- ${item.endDate}` : ''}</Text>
+                <View style={styles.footer}>
+                    <Text style={styles.price}>${item.totalPrice}</Text>
+                    <Text style={[styles.status, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Upcoming': return '#0a7ea4';
+            case 'Completed': return 'green';
+            case 'Cancelled': return 'red';
+            default: return '#666';
+        }
+    };
+
+    return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.header}>
+                <Text style={styles.title}>My Trips</Text>
+            </View>
+            <View style={styles.tabs}>
+                {TABS.map(tab => (
+                    <Chip
+                        key={tab}
+                        label={tab}
+                        selected={activeTab === tab}
+                        onPress={() => setActiveTab(tab)}
+                    />
+                ))}
+            </View>
+
+            <FlatList
+                data={bookings}
+                keyExtractor={item => item.id}
+                renderItem={renderBookingItem}
+                contentContainerStyle={styles.listContent}
+                ListEmptyComponent={<EmptyState title="No Trips" message={`You have no ${activeTab.toLowerCase()} trips.`} icon="airplane" />}
+            />
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 22, fontWeight: '900', color: '#111827' },
-  card: { borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', padding: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 15, fontWeight: '900', color: '#111827', flex: 1, marginRight: 10 },
-  meta: { marginTop: 6, color: '#6B7280', fontWeight: '600' },
-  total: { fontSize: 16, fontWeight: '900', color: '#111827' },
-  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: '#F3F4F6', color: '#111827', fontWeight: '800', fontSize: 12 },
-  smallBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: '#111827' },
-  smallBtnText: { color: '#FFFFFF', fontWeight: '800' },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    header: {
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#0a7ea4',
+    },
+    tabs: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        marginBottom: 16,
+    },
+    listContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    },
+    card: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        marginBottom: 16,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
+    },
+    image: {
+        width: 100,
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    content: {
+        flex: 1,
+        padding: 12,
+        justifyContent: 'space-between',
+    },
+    bookingType: {
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 4,
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        flex: 1,
+        marginRight: 8,
+    },
+    date: {
+        fontSize: 14,
+        color: '#666',
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    price: {
+        fontWeight: 'bold',
+    },
+    status: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 4,
+    },
+    typeBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+        alignSelf: 'flex-start', // Ensure it doesn't stretch
+        flexShrink: 0,
+    },
+    typeText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+    }
 });

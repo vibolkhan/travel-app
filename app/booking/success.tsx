@@ -1,37 +1,64 @@
-// File: app/booking/success.tsx
-
-import { router, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-
-import { MaterialIcons } from '@expo/vector-icons';
+import { Stack, useRouter } from 'expo-router';
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+
+import { IconSymbol } from '../../components/IconSymbol';
 import { Button } from '../../components/ui/Button';
 
-export default function BookingSuccess() {
-  const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
+export default function BookingSuccessScreen() {
+    const router = useRouter();
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <View style={styles.icon}>
-          <MaterialIcons name="check-circle" size={42} color="#16A34A" />
+    const handleHome = () => {
+        // Navigate back to Explore tab, clearing stack
+        router.replace('/(tabs)/explore');
+    };
+
+    return (
+        <View style={styles.container}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.content}>
+                <View style={styles.iconCircle}>
+                    <IconSymbol name="checkmark.circle.fill" size={80} color="#0a7ea4" />
+                </View>
+                <Text style={styles.title}>Booking Confirmed!</Text>
+                <Text style={styles.message}>
+                    Your trip has been successfully booked. You can view details in your trips history.
+                </Text>
+            </View>
+            <View style={styles.footer}>
+                <Button title="Back to Home" onPress={handleHome} />
+            </View>
         </View>
-        <Text style={styles.title}>Booking confirmed</Text>
-        <Text style={styles.subtitle}>Your booking ID is {bookingId ?? '—'}.</Text>
-
-        <View style={{ height: 14 }} />
-        <Button title="View bookings" onPress={() => router.push('/history')} />
-        <View style={{ height: 10 }} />
-        <Button title="Back to explore" variant="secondary" onPress={() => router.push('/explore')} />
-      </View>
-    </SafeAreaView>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
-  container: { flex: 1, padding: 16, alignItems: 'center', justifyContent: 'center' },
-  icon: { width: 72, height: 72, borderRadius: 20, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  title: { fontSize: 22, fontWeight: '900', color: '#111827', textAlign: 'center' },
-  subtitle: { marginTop: 6, color: '#6B7280', fontWeight: '700', textAlign: 'center' },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        padding: 20,
+    },
+    content: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconCircle: {
+        marginBottom: 24,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 12,
+    },
+    message: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        paddingHorizontal: 32,
+    },
+    footer: {
+        paddingBottom: 20,
+    }
 });

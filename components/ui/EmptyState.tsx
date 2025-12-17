@@ -1,39 +1,40 @@
-// File: components/ui/EmptyState.tsx
-
-import { StyleSheet, Text, View } from 'react-native';
-
 import React from 'react';
-import { Button } from './Button';
+import { StyleSheet, Text, View } from 'react-native';
+import { IconSymbol, IconSymbolName } from '../IconSymbol';
 
-type Props = {
-  title: string;
-  subtitle?: string;
-  ctaLabel?: string;
-  onCtaPress?: () => void;
-};
+interface EmptyStateProps {
+    title: string;
+    message: string;
+    icon?: IconSymbolName;
+}
 
-export function EmptyState({ title, subtitle, ctaLabel, onCtaPress }: Props) {
-  return (
-    <View style={styles.wrap}>
-      <Text style={styles.icon}>🧭</Text>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-      {ctaLabel && onCtaPress ? (
-        <Button title={ctaLabel} onPress={onCtaPress} style={{ marginTop: 14, width: 220 }} />
-      ) : null}
-    </View>
-  );
+export function EmptyState({ title, message, icon = 'search' }: EmptyStateProps) {
+    return (
+        <View style={styles.container}>
+            <IconSymbol name={icon} size={48} color="#ccc" />
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.message}>{message}</Text>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: 24, alignItems: 'center', justifyContent: 'center' },
-  icon: { fontSize: 42, marginBottom: 10 },
-  title: { fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginTop: 16,
+        color: '#333',
+    },
+    message: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        marginTop: 8,
+    },
 });

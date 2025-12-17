@@ -1,72 +1,60 @@
-// File: data/destinations.ts
-
 import { Destination } from '../types/models';
 
 export const destinations: Destination[] = [
   {
-    id: 'dest-bali',
-    name: 'Bali Escape',
+    id: '1',
+    name: 'Bali',
+    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4',
     location: 'Indonesia',
-    category: 'Beach',
-    rating: 4.7,
-    priceFrom: 89,
-    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-    description: 'Sun, surf, and serene temples—Bali is the perfect island getaway.',
-    highlights: ['Uluwatu cliffs', 'Beach clubs', 'Rice terraces', 'Sunset tours'],
-  },
-  {
-    id: 'dest-siemreap',
-    name: 'Angkor Wonders',
-    location: 'Siem Reap, Cambodia',
-    category: 'Culture',
     rating: 4.8,
-    priceFrom: 39,
-    image: 'https://images.unsplash.com/photo-1564594735976-55f799b00bfb?auto=format&fit=crop&w=1200&q=80',
-    description: 'Explore ancient temples and vibrant night markets in Siem Reap.',
-    highlights: ['Angkor Wat', 'Bayon', 'Sunrise', 'Food markets'],
-  },
-  {
-    id: 'dest-tokyo',
-    name: 'Tokyo Lights',
-    location: 'Japan',
-    category: 'City',
-    rating: 4.6,
-    priceFrom: 129,
-    image: 'https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&fit=crop&w=1200&q=80',
-    description: 'Neon streets, world-class food, and a city that never sleeps.',
-    highlights: ['Shibuya', 'Sushi spots', 'Skytree', 'Day trips'],
-  },
-  {
-    id: 'dest-alps',
-    name: 'Alpine Peaks',
-    location: 'Switzerland',
-    category: 'Mountain',
-    rating: 4.9,
-    priceFrom: 159,
-    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
-    description: 'Crisp air, scenic trains, and unforgettable mountain views.',
-    highlights: ['Hikes', 'Cable cars', 'Lakes', 'Chalets'],
-  },
-  {
-    id: 'dest-paris',
-    name: 'Paris Classic',
-    location: 'France',
-    category: 'Culture',
-    rating: 4.5,
-    priceFrom: 119,
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80',
-    description: 'Museums, cafés, and romantic walks along the Seine.',
-    highlights: ['Louvre', 'Eiffel Tower', 'Montmartre', 'Pastries'],
-  },
-  {
-    id: 'dest-phuket',
-    name: 'Phuket Beaches',
-    location: 'Thailand',
+    description: 'Tropical paradise with beautiful beaches and vibrant culture.',
+    pricePerDay: 120,
     category: 'Beach',
-    rating: 4.4,
-    priceFrom: 69,
-    image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-    description: 'Island hopping, snorkeling, and relaxing sunsets.',
-    highlights: ['Phi Phi', 'Snorkel', 'Night markets', 'Boat tours'],
+    images: [
+      'https://images.unsplash.com/photo-1537996194471-e657df975ab4',
+      'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b',
+    ]
   },
+  {
+    id: '2',
+    name: 'Kyoto',
+    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e',
+    location: 'Japan',
+    rating: 4.9,
+    description: 'Ancient temples, traditional tea houses, and sublime gardens.',
+    pricePerDay: 180,
+    category: 'Culture',
+    images: [
+      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e',
+      'https://images.unsplash.com/photo-1624253321171-1be53e12f5f4'
+    ]
+  },
+  {
+    id: '3',
+    name: 'Paris',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34',
+    location: 'France',
+    rating: 4.7,
+    description: 'The city of love, art, and exquisite cuisine.',
+    pricePerDay: 250,
+    category: 'City',
+    images: [
+      'https://images.unsplash.com/photo-1502602898657-3e91760cbb34',
+      'https://images.unsplash.com/photo-1522093007474-d86e9bf7ba6f'
+    ]
+  },
+  {
+    id: '4',
+    name: 'Swiss Alps',
+    image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7',
+    location: 'Switzerland',
+    rating: 4.9,
+    description: 'Breathtaking mountain peaks only accessible by train or hike.',
+    pricePerDay: 300,
+    category: 'Mountain',
+    images: [
+      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7',
+      'https://images.unsplash.com/photo-1502301131665-382a937a090d'
+    ]
+  }
 ];

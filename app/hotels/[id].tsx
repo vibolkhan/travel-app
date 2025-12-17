@@ -1,146 +1,217 @@
-// File: app/hotels/[id].tsx
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { addDaysISO, todayISO } from '../../utils/dates';
-
-import { MaterialIcons } from '@expo/vector-icons';
+import { IconSymbol } from '../../components/IconSymbol';
+import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
 import { RatingStars } from '../../components/ui/RatingStars';
+import { useFavorites } from '../../context/FavoritesContext';
 import { hotels } from '../../data/hotels';
-import { useBookingStore } from '../../store/useBookingStore';
-import { formatMoney } from '../../utils/money';
 
-export default function HotelDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const hotel = useMemo(() => hotels.find((h) => h.id === id), [id]);
+export default function HotelDetailScreen() {
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const router = useRouter();
+    const hotel = hotels.find(h => h.id === id);
+    const { isFavorite, addFavorite, removeFavorite } = useFavorites();
 
-  const [guests, setGuests] = useState(2);
-  const [checkInISO, setCheckInISO] = useState(todayISO());
-  const [checkOutISO, setCheckOutISO] = useState(addDaysISO(todayISO(), 2));
+    if (!hotel) return <View style={styles.center}><Text>Hotel not found</Text></View>;
 
-  const setDraft = useBookingStore((s) => s.setDraft);
+    const isFav = isFavorite(hotel.id, 'hotel');
+    const toggleFavorite = () => {
+        isFav ? removeFavorite(hotel.id, 'hotel') : addFavorite(hotel.id, 'hotel');
+    };
 
-  if (!hotel) {
     return (
-      <View style={styles.center}>
-        <Text style={{ fontWeight: '800' }}>Hotel not found.</Text>
-      </View>
-    );
-  }
+        <>
+            <Stack.Screen options={{
+                title: hotel.name,
+                headerLeft: () => <BackButton />,
+                headerRight: () => (
+                    <IconSymbol
+                        name={isFav ? "heart.fill" : "heart"}
+                        size={24}
+                        color={isFav ? "red" : "#007AFF"}
+                        style={{ marginRight: 16 }}
+                        onPress={toggleFavorite}
+                    />
+                )
+            }} />
+            <ScrollView style={styles.container}>
+                <Image
+                    source={typeof hotel.image === 'string' ? { uri: hotel.image } : hotel.image}
+                    style={styles.image}
+                />
+                <View style={styles.content}>
+                    <View style={styles.header}>
+                        <Text style={styles.name}>{hotel.name}</Text>
+                        <RatingStars rating={hotel.rating} />
+                    </View>
+                    <View style={styles.locationRow}>
+                        <IconSymbol name="mappin.and.ellipse" size={16} color="#666" />
+                        <Text style={styles.location}>{hotel.location}</Text>
+                    </View>
 
-  const startBooking = () => {
-    // Draft will be finalized after choosing a room
-    setDraft({
-      kind: 'hotel',
-      itemId: hotel.id,
-      roomId: undefined,
-      checkInISO,
-      checkOutISO,
-      guests,
-    });
-    router.push({ pathname: '/hotels/[id]/rooms', params: { id: hotel.id } });
-  };
+                    <Text style={styles.sectionTitle}>Amenities</Text>
+                    <View style={styles.amenities}>
+                        {hotel.amenities.map((amenity, index) => (
+                            <View key={index} style={styles.amenityTag}>
+                                <Text style={styles.amenityText}>{amenity}</Text>
+                            </View>
+                        ))}
+                    </View>
 
-  return (
-    <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 18 }}>
-      <Image source={{ uri: hotel.image }} style={styles.hero} />
+                    <Text style={styles.sectionTitle}>Description</Text>
+                    <Text style={styles.description}>{hotel.description}</Text>
 
-      <View style={styles.body}>
-        <Text style={styles.title}>{hotel.name}</Text>
-        <Text style={styles.location}>{hotel.location}</Text>
+                    <View style={styles.reviewsPreview}>
+                        <View style={styles.reviewHeader}>
+                            <Text style={styles.sectionTitle}>Reviews</Text>
+                            <Text style={styles.seeAll} onPress={() => router.push({ pathname: '/reviews', params: { targetId: hotel.id } })}>See All</Text>
+                        </View>
+                        <View style={styles.ratingSummary}>
+                            <Text style={styles.ratingParams}>{hotel.rating} / 5</Text>
+                            <Text style={styles.reviewCount}>({hotel.reviews} reviews)</Text>
+                        </View>
+                    </View>
 
-        <View style={styles.row}>
-          <RatingStars rating={hotel.rating} />
-          <Text style={styles.price}>{formatMoney(hotel.pricePerNight)}/night</Text>
-        </View>
-
-        <Text style={styles.section}>Amenities</Text>
-        <View style={styles.pills}>
-          {hotel.amenities.map((a) => (
-            <View key={a} style={styles.pill}>
-              <Text style={styles.pillText}>{a}</Text>
+                </View>
+            </ScrollView>
+            <View style={styles.footer}>
+                <View>
+                    <Text style={styles.priceLabel}>Start from</Text>
+                    <Text style={styles.price}>${hotel.pricePerNight}<Text style={styles.perNight}>/night</Text></Text>
+                </View>
+                <Button title="Select Details" onPress={() => router.push(`/hotels/${hotel.id}/rooms`)} style={styles.bookBtn} />
             </View>
-          ))}
-        </View>
-
-        <Text style={styles.section}>Dates & Guests</Text>
-        <View style={styles.selectorRow}>
-          <Pressable style={styles.selector} onPress={() => setCheckInISO(addDaysISO(checkInISO, -1))}>
-            <MaterialIcons name="remove" size={18} color="#111827" />
-            <Text style={styles.selectorText}>Check-in: {checkInISO}</Text>
-          </Pressable>
-          <Pressable style={styles.selector} onPress={() => setCheckInISO(addDaysISO(checkInISO, +1))}>
-            <MaterialIcons name="add" size={18} color="#111827" />
-            <Text style={styles.selectorText}>+1 day</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.selectorRow}>
-          <Pressable style={styles.selector} onPress={() => setCheckOutISO(addDaysISO(checkOutISO, -1))}>
-            <MaterialIcons name="remove" size={18} color="#111827" />
-            <Text style={styles.selectorText}>Check-out: {checkOutISO}</Text>
-          </Pressable>
-          <Pressable style={styles.selector} onPress={() => setCheckOutISO(addDaysISO(checkOutISO, +1))}>
-            <MaterialIcons name="add" size={18} color="#111827" />
-            <Text style={styles.selectorText}>+1 day</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.selectorRow}>
-          <Pressable style={styles.selector} onPress={() => setGuests((g) => Math.max(1, g - 1))}>
-            <MaterialIcons name="remove" size={18} color="#111827" />
-            <Text style={styles.selectorText}>Guests: {guests}</Text>
-          </Pressable>
-          <Pressable style={styles.selector} onPress={() => setGuests((g) => Math.min(8, g + 1))}>
-            <MaterialIcons name="add" size={18} color="#111827" />
-            <Text style={styles.selectorText}>Add guest</Text>
-          </Pressable>
-        </View>
-
-        <Text style={styles.section}>About</Text>
-        <Text style={styles.text}>{hotel.description}</Text>
-
-        <View style={{ marginTop: 16 }}>
-          <Button title="Choose a room" onPress={startBooking} />
-          <View style={{ height: 10 }} />
-          <Button
-            title="See reviews"
-            variant="ghost"
-            onPress={() => router.push({ pathname: '/reviews', params: { itemType: 'hotel', itemId: hotel.id } })}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
+        </>
+    );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#FFFFFF' },
-  hero: { width: '100%', height: 260, backgroundColor: '#E5E7EB' },
-  body: { padding: 16 },
-  title: { fontSize: 22, fontWeight: '900', color: '#111827' },
-  location: { marginTop: 4, color: '#6B7280', fontWeight: '700' },
-  row: { marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  price: { fontSize: 16, fontWeight: '900', color: '#111827' },
-  section: { marginTop: 16, marginBottom: 8, fontSize: 16, fontWeight: '900', color: '#111827' },
-  text: { color: '#111827', lineHeight: 18, fontWeight: '600' },
-  pills: { flexDirection: 'row', flexWrap: 'wrap' },
-  pill: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: '#F3F4F6', marginRight: 6, marginBottom: 6 },
-  pillText: { fontSize: 12, fontWeight: '700', color: '#111827' },
-  selectorRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  selector: {
-    flex: 1,
-    height: 46,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  selectorText: { marginLeft: 8, fontWeight: '800', color: '#111827' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    image: {
+        width: '100%',
+        height: 250,
+        resizeMode: 'cover',
+    },
+    content: {
+        padding: 20,
+        backgroundColor: '#fff',
+        marginTop: -20,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    name: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        flex: 1,
+        marginRight: 8,
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    location: {
+        fontSize: 16,
+        color: '#666',
+        marginLeft: 6,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        marginTop: 8,
+    },
+    amenities: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 16,
+    },
+    amenityTag: {
+        backgroundColor: '#f5f5f5',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    amenityText: {
+        fontSize: 14,
+        color: '#444',
+    },
+    description: {
+        fontSize: 16,
+        lineHeight: 24,
+        color: '#444',
+        marginBottom: 24,
+    },
+    reviewsPreview: {
+        marginBottom: 20,
+    },
+    reviewHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    seeAll: {
+        color: '#0a7ea4',
+        fontWeight: '600',
+    },
+    ratingSummary: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+    },
+    ratingParams: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginRight: 8,
+    },
+    reviewCount: {
+        fontSize: 14,
+        color: '#666',
+    },
+    footer: {
+        padding: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    priceLabel: {
+        fontSize: 12,
+        color: '#666',
+    },
+    price: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#0a7ea4',
+    },
+    perNight: {
+        fontSize: 14,
+        fontWeight: '400',
+        color: '#666',
+    },
+    bookBtn: {
+        width: 150,
+    }
 });

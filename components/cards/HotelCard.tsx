@@ -1,77 +1,108 @@
-// File: components/cards/HotelCard.tsx
-
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-
 import React from 'react';
-import { useFavoritesStore } from '../../store/useFavoritesStore';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Hotel } from '../../types/models';
-import { formatMoney } from '../../utils/money';
+import { IconSymbol } from '../IconSymbol';
 import { RatingStars } from '../ui/RatingStars';
 
-export function HotelCard({ item, onPress }: { item: Hotel; onPress: () => void }) {
-  const isFav = useFavoritesStore((s) => s.isFavorite('hotel', item.id));
-  const toggle = useFavoritesStore((s) => s.toggleFavorite);
+interface HotelCardProps {
+    hotel: Hotel;
+    onPress: () => void;
+}
 
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <Pressable
-        onPress={() => toggle('hotel', item.id)}
-        style={({ pressed }) => [styles.heart, pressed && { opacity: 0.8 }]}
-        hitSlop={10}
-      >
-        <Text style={styles.heartText}>{isFav ? '♥' : '♡'}</Text>
-      </Pressable>
-
-      <View style={styles.content}>
-        <Text numberOfLines={1} style={styles.title}>
-          {item.name}
-        </Text>
-        <Text numberOfLines={1} style={styles.meta}>
-          {item.location}
-        </Text>
-        <View style={styles.row}>
-          <RatingStars rating={item.rating} />
-          <Text style={styles.price}>{formatMoney(item.pricePerNightFrom)} / night</Text>
-        </View>
-
-        <View style={styles.amenities}>
-          <Text style={styles.amenityText} numberOfLines={1}>
-            {item.amenities.map((a) => `• ${a}`).join('  ')}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
+export function HotelCard({ hotel, onPress }: HotelCardProps) {
+    return (
+        <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
+            <Image
+                source={typeof hotel.image === 'string' ? { uri: hotel.image } : hotel.image}
+                style={styles.image}
+            />
+            <View style={styles.content}>
+                <View style={styles.row}>
+                    <Text style={styles.name}>{hotel.name}</Text>
+                    <RatingStars rating={hotel.rating} />
+                </View>
+                <View style={styles.locationRow}>
+                    <IconSymbol name="mappin.and.ellipse" size={14} color="#666" />
+                    <Text style={styles.location}>{hotel.location}</Text>
+                </View>
+                <View style={styles.footer}>
+                    <Text style={styles.price}>${hotel.pricePerNight}<Text style={styles.perNight}>/night</Text></Text>
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{hotel.reviews} reviews</Text>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-  },
-  pressed: { opacity: 0.92 },
-  image: { width: '100%', height: 140, backgroundColor: '#F3F4F6' },
-  content: { padding: 12 },
-  title: { fontSize: 15, fontWeight: '800', color: '#111827' },
-  meta: { marginTop: 3, fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  row: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  price: { fontSize: 12, color: '#111827', fontWeight: '800' },
-  amenities: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  amenityText: { fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  heart: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 34,
-    height: 34,
-    borderRadius: 999,
-    backgroundColor: 'rgba(17,24,39,0.65)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heartText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+    container: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        height: 100,
+    },
+    image: {
+        width: 100,
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    content: {
+        flex: 1,
+        padding: 10,
+        justifyContent: 'space-between',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    name: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        flex: 1,
+        marginRight: 8,
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    location: {
+        fontSize: 14,
+        color: '#666',
+        marginLeft: 4,
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    price: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#0a7ea4',
+    },
+    perNight: {
+        fontSize: 12,
+        fontWeight: '400',
+        color: '#666',
+    },
+    badge: {
+        backgroundColor: '#f0f0f0',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    badgeText: {
+        fontSize: 12,
+        color: '#666',
+    }
 });

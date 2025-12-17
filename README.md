@@ -1,50 +1,78 @@
-# Welcome to your Expo app 👋
+# Travel App Project
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native (Expo) travel booking application that allows users to explore destinations, hotels, and tours, manage favorites, and book trips.
 
-## Get started
+## 📱 Application Flow
 
-1. Install dependencies
+The application uses a tab-based navigation layout with the following main flows:
 
-   ```bash
-   npm install
-   ```
+### 1. 🌍 Explore (Home)
+- **Entry Point**: The default screen upon opening the app.
+- **Features**:
+  - Displays a list of curated **Destinations** (centered cards).
+  - Search bar to filter destinations by name or location.
+  - Category chips (All, Beach, Mountain, etc.) for quick filtering.
+- **Navigation**:
+  - Tapping a card opens the **Destination Detail** screen.
 
-2. Start the app
+### 2. 🏨 Detail Screens
+Detailed views for Destinations, Hotels, and Tours.
+- **Features**:
+  - **Hero Image & Rating**: High-quality headers with star ratings.
+  - **Favorite Toggle**: integration with `FavoritesContext` to save items.
+  - **Info Sections**: Description, amenities (hotels), itinerary (tours), reviews preview.
+  - **Sub-listings**: Destination details show "Popular Hotels" and "Top Tours" in that area.
+- **Actions**:
+  - **Back Button**: Custom top-left arrow to return to the previous screen.
+  - **"Book Now" / "Select Dates"**: Initiates the booking flow.
 
-   ```bash
-   npx expo start
-   ```
+### 3. 📅 Booking Flow
+A multi-step process to reserve a trip.
+1.  **Detail Screen**: User clicks "Book" or "Select Details".
+2.  **Date Selection**: User picks Start/End dates and Number of guests.
+3.  **Summary Screen**: Review booking details, price breakdown (Base + Taxes + Fees), and total cost.
+4.  **Confirmation**: Clicking "Pay" creates a booking record in `BookingContext` and redirects to a Success screen.
 
-In the output, you'll find options to open the app in a
+### 4. ❤️ Saved (Favorites)
+- Displays a list of all items (Destinations, Hotels, Tours) marked as "Favorite".
+- **Persistence**: Favorites are saved locally using `AsyncStorage`, so they remain even after closing the app.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 5. ✈️ Trips (History)
+- Lists all upcoming and past bookings.
+- Managed via `BookingContext` and persisted locally.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠 Technical Stack
 
-## Get a fresh project
+- **Framework**: React Native with [Expo Router](https://docs.expo.dev/router/introduction/).
+- **Language**: TypeScript.
+- **State Management**: React Context API (`FavoritesContext`, `BookingContext`).
+- **Persistence**: `@react-native-async-storage/async-storage`.
+- **Styling**: `StyleSheet` with standard Flexbox layout.
 
-When you're ready, run:
+## 🚀 Getting Started
 
-```bash
-npm run reset-project
-```
+1.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2.  **Start the Server**:
+    ```bash
+    npx expo start -c
+    ```
+    *(The `-c` flag is recommended to clear cache if you switched from other state libraries)*.
 
-## Learn more
+3.  **Run on Device**:
+    - Scan the QR code with the **Expo Go** app (Android) or Camera (iOS).
+    - Ensure your phone and computer are on the same Wi-Fi network.
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📂 Project Structure
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `app/`: Expo Router pages.
+  - `(tabs)/`: Main tab screens (Explore, Favorite, History, etc.).
+  - `tours/`, `hotels/`, `explore/`: Detail screens.
+  - `booking/`: Booking flow screens.
+- `components/`: Reusable UI components (`Card`, `Button`, `IconSymbol`).
+- `context/`: Global state providers (`FavoritesContext`, `BookingContext`).
+- `data/`: Mock data for the application.
+- `types/`: TypeScript interfaces/models.

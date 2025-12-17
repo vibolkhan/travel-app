@@ -1,47 +1,114 @@
-// File: components/cards/RoomCard.tsx
-
-import { Image, StyleSheet, Text, View } from 'react-native';
-
 import React from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { Room } from '../../types/models';
-import { formatMoney } from '../../utils/money';
+import { IconSymbol } from '../IconSymbol';
 import { Button } from '../ui/Button';
 
-export function RoomCard({ item, onSelect }: { item: Room; onSelect: () => void }) {
-  return (
-    <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.content}>
-        <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.meta}>
-          👥 {item.capacity} • 🛏 {item.bedType}
-        </Text>
-        <Text style={styles.amenities} numberOfLines={1}>
-          {item.amenities.map((a) => `• ${a}`).join('  ')}
-        </Text>
-        <View style={styles.row}>
-          <Text style={styles.price}>{formatMoney(item.pricePerNight)} / night</Text>
-          <Button title="Select room" onPress={onSelect} variant="primary" style={{ width: 130 }} />
+interface RoomCardProps {
+    room: Room;
+    onSelect: () => void;
+}
+
+export function RoomCard({ room, onSelect }: RoomCardProps) {
+    return (
+        <View style={styles.container}>
+            <Image
+                source={typeof room.image === 'string' ? { uri: room.image } : room.image}
+                style={styles.image}
+            />
+            <View style={styles.content}>
+                <Text style={styles.name}>{room.name}</Text>
+                <View style={styles.infoRow}>
+                    <IconSymbol name="person.2.fill" size={16} color="#666" />
+                    <Text style={styles.infoText}>{room.capacity} Guests</Text>
+                    <View style={styles.dot} />
+                    <IconSymbol name="bed.double" size={16} color="#666" />
+                    <Text style={styles.infoText}>{room.bedType}</Text>
+                </View>
+                <View style={styles.amenities}>
+                    {room.amenities.slice(0, 3).map((amenity, index) => (
+                        <Text key={index} style={styles.amenity}>• {amenity}</Text>
+                    ))}
+                </View>
+                <View style={styles.footer}>
+                    <Text style={styles.price}>${room.price}<Text style={styles.perNight}>/night</Text></Text>
+                    <Button title="Select" onPress={onSelect} style={styles.button} />
+                </View>
+            </View>
         </View>
-      </View>
-    </View>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  image: { width: '100%', height: 150, backgroundColor: '#F3F4F6' },
-  content: { padding: 12 },
-  title: { fontSize: 15, fontWeight: '800', color: '#111827' },
-  meta: { marginTop: 4, fontSize: 12, color: '#6B7280', fontWeight: '700' },
-  amenities: { marginTop: 8, fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  row: { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  price: { fontSize: 14, fontWeight: '900', color: '#111827' },
+    container: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    image: {
+        width: '100%',
+        height: 180,
+        resizeMode: 'cover',
+    },
+    content: {
+        padding: 16,
+    },
+    name: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    infoText: {
+        fontSize: 14,
+        color: '#666',
+        marginLeft: 4,
+        marginRight: 8,
+    },
+    dot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#ccc',
+        marginRight: 8,
+    },
+    amenities: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 16,
+    },
+    amenity: {
+        fontSize: 14,
+        color: '#666',
+        marginRight: 8,
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    price: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#0a7ea4',
+    },
+    perNight: {
+        fontSize: 14,
+        fontWeight: '400',
+        color: '#666',
+    },
+    button: {
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+    }
 });

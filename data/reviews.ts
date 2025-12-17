@@ -1,36 +1,31 @@
-// File: data/reviews.ts
-
 import { Review } from '../types/models';
 
-export const REVIEWS: Review[] = [
+export const reviews: Review[] = [
   {
-    id: 'rev-1',
-    type: 'destination',
-    targetId: 'dest-siemreap',
-    userName: 'Sokha',
+    id: 'rev1',
+    targetId: 'h1',
+    authorName: 'Sarah Jenkins',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
     rating: 5,
-    dateISO: '2025-10-05',
-    text: 'Angkor sunrise was unforgettable. Great tips from the guide!',
-    avatarUrl: 'https://i.pravatar.cc/150?img=12',
+    date: '2023-10-15',
+    text: 'Absolutely stunning resort! The staff were incredibly friendly and the villa was perfect.'
   },
   {
-    id: 'rev-2',
-    type: 'hotel',
-    targetId: 'hotel-angkor-boutique',
-    userName: 'Dara',
-    rating: 5,
-    dateISO: '2025-09-18',
-    text: 'Super friendly staff, clean rooms, and perfect location.',
-    avatarUrl: 'https://i.pravatar.cc/150?img=32',
-  },
-  {
-    id: 'rev-3',
-    type: 'tour',
-    targetId: 'tour-angkor-day',
-    userName: 'Mina',
+    id: 'rev2',
+    targetId: 'h1',
+    authorName: 'Michael Chen',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
     rating: 4,
-    dateISO: '2025-11-01',
-    text: 'Good pace, comfortable transport. Bring extra water for heat.',
-    avatarUrl: 'https://i.pravatar.cc/150?img=5',
+    date: '2023-09-20',
+    text: 'Great place, but the food was a bit pricey.'
   },
+  {
+    id: 'rev3',
+    targetId: 't1',
+    authorName: 'Emily Clark',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+    rating: 5,
+    date: '2023-11-02',
+    text: 'The best tour guide ever! Learned so much about Bali culture.'
+  }
 ];

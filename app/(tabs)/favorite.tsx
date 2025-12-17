@@ -1,97 +1,126 @@
-// File: app/(tabs)/favorite.tsx
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import React, { useMemo, useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-
-import { router } from 'expo-router';
 import { DestinationCard } from '../../components/cards/DestinationCard';
 import { HotelCard } from '../../components/cards/HotelCard';
 import { TourCard } from '../../components/cards/TourCard';
 import { Chip } from '../../components/ui/Chip';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { useFavorites } from '../../context/FavoritesContext';
 import { destinations } from '../../data/destinations';
 import { hotels } from '../../data/hotels';
 import { tours } from '../../data/tours';
-import { useFavoritesStore } from '../../store/useFavoritesStore';
 
-type Tab = 'Destinations' | 'Hotels' | 'Tours';
-const tabs: Tab[] = ['Destinations', 'Hotels', 'Tours'];
+const TABS = ['Destinations', 'Hotels', 'Tours'];
 
-export default function FavoriteTab() {
-  const [tab, setTab] = useState<Tab>('Destinations');
-  const fav = useFavoritesStore();
+export default function FavoriteScreen() {
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState('Destinations');
+    const { favorites } = useFavorites();
 
-  const items = useMemo(() => {
-    if (tab === 'Destinations') return destinations.filter((d) => fav.destinationIds.includes(d.id));
-    if (tab === 'Hotels') return hotels.filter((h) => fav.hotelIds.includes(h.id));
-    return tours.filter((t) => fav.tourIds.includes(t.id));
-  }, [tab, fav.destinationIds, fav.hotelIds, fav.tourIds]);
+    const renderContent = () => {
+        if (activeTab === 'Destinations') {
+            const favDestinations = destinations.filter(d => favorites.some(f => f.id === d.id && f.type === 'destination'));
+            if (favDestinations.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any destinations yet." />;
+            return (
+                <FlatList
+                    data={favDestinations}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                        <DestinationCard
+                            destination={item}
+                            width="100%"
+                            onPress={() => router.push(`/explore/${item.id}`)}
+                        />
+                    )}
+                    contentContainerStyle={styles.listContent}
+                />
+            );
+        } else if (activeTab === 'Hotels') {
+            const favHotels = hotels.filter(h => favorites.some(f => f.id === h.id && f.type === 'hotel'));
+            if (favHotels.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any hotels yet." icon="bed.double" />;
+            return (
+                <FlatList
+                    data={favHotels}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                        <HotelCard
+                            hotel={item}
+                            onPress={() => router.push(`/hotels/${item.id}`)}
+                        />
+                    )}
+                    contentContainerStyle={styles.listContent}
+                />
+            );
+        } else {
+            const favTours = tours.filter(t => favorites.some(f => f.id === t.id && f.type === 'tour'));
+            if (favTours.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any tours yet." icon="airplane" />;
+            return (
+                <FlatList
+                    data={favTours}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                        <TourCard
+                            tour={item}
+                            onPress={() => router.push(`/tours/${item.id}`)}
+                        />
+                    )}
+                    contentContainerStyle={styles.listContent}
+                />
+            );
+        }
+    };
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Favorites</Text>
-
-        <View style={{ marginTop: 10 }}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={tabs}
-            keyExtractor={(x) => x}
-            renderItem={({ item }) => <Chip label={item} selected={item === tab} onPress={() => setTab(item)} />}
-          />
-        </View>
-
-        {items.length === 0 ? (
-          <View style={{ marginTop: 30 }}>
-            <EmptyState
-              icon="favorite-border"
-              title="No favorites yet"
-              subtitle="Save destinations, hotels, or tours by tapping the heart icon."
-              ctaTitle="Explore"
-              onCtaPress={() => router.push('/explore')}
-            />
-          </View>
-        ) : tab === 'Destinations' ? (
-          <FlatList
-            style={{ marginTop: 14 }}
-            data={items as any[]}
-            keyExtractor={(x: any) => x.id}
-            numColumns={2}
-            columnWrapperStyle={{ gap: 12 }}
-            contentContainerStyle={{ gap: 12, paddingBottom: 20 }}
-            renderItem={({ item }: any) => (
-              <View style={{ flex: 1 }}>
-                <DestinationCard item={item} onPress={() => router.push({ pathname: '/explore/[id]', params: { id: item.id } })} />
-              </View>
-            )}
-          />
-        ) : tab === 'Hotels' ? (
-          <FlatList
-            style={{ marginTop: 14 }}
-            data={items as any[]}
-            keyExtractor={(x: any) => x.id}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-            renderItem={({ item }: any) => <HotelCard item={item} onPress={() => router.push({ pathname: '/hotels/[id]', params: { id: item.id } })} />}
-          />
-        ) : (
-          <FlatList
-            style={{ marginTop: 14 }}
-            data={items as any[]}
-            keyExtractor={(x: any) => x.id}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-            renderItem={({ item }: any) => <TourCard item={item} onPress={() => router.push({ pathname: '/tours/[id]', params: { id: item.id } })} />}
-          />
-        )}
-      </View>
-    </SafeAreaView>
-  );
+    return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.header}>
+                <Text style={styles.title}>Favorites</Text>
+            </View>
+            <View style={styles.tabs}>
+                {TABS.map(tab => (
+                    <Chip
+                        key={tab}
+                        label={tab}
+                        selected={activeTab === tab}
+                        onPress={() => setActiveTab(tab)}
+                    />
+                ))}
+            </View>
+            <View style={styles.content}>
+                {renderContent()}
+            </View>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 22, fontWeight: '900', color: '#111827' },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    header: {
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#0a7ea4',
+    },
+    tabs: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        marginBottom: 16,
+    },
+    content: {
+        flex: 1,
+    },
+    listContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    }
 });

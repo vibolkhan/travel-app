@@ -1,93 +1,81 @@
-// File: types/models.ts
-export type Category = 'Beach' | 'Mountain' | 'City' | 'Culture';
-
-export type Destination = {
+export interface Destination {
   id: string;
   name: string;
+  image: any; // Using any for require() or uri
   location: string;
-  category: Category;
-  rating: number; // 0..5
-  priceFrom: number; // USD
-  image: string;
+  rating: number;
   description: string;
-  highlights: string[];
-};
+  pricePerDay: number;
+  category: 'Beach' | 'Mountain' | 'City' | 'Culture';
+  images: any[];
+}
 
-export type Hotel = {
+export interface Hotel {
   id: string;
   destinationId: string;
   name: string;
+  image: any;
   location: string;
   rating: number;
-  pricePerNight: number; // USD
-  image: string;
-  images?: string[];
-  amenities: ('wifi' | 'pool' | 'breakfast' | 'parking' | 'spa' | 'gym')[];
+  pricePerNight: number;
+  amenities: string[];
   description: string;
-};
+  images: any[];
+  reviews: number;
+}
 
-export type Room = {
+export interface Room {
   id: string;
   hotelId: string;
   name: string;
-  image: string;
-  pricePerNight: number; // USD
+  image: any;
   capacity: number;
-  bedType: 'Single' | 'Double' | 'Queen' | 'King' | 'Twin';
-  amenities: ('wifi' | 'ac' | 'tv' | 'balcony' | 'minibar' | 'bath')[];
-  refundable: boolean;
-};
+  bedType: string;
+  price: number;
+  amenities: string[];
+}
 
-export type Tour = {
+export interface Tour {
   id: string;
   destinationId: string;
-  title: string;
-  image: string;
-  rating: number;
-  priceFrom: number; // USD
-  durationHours: number;
+  name: string;
+  image: any;
+  duration: string;
   groupSize: number;
+  price: number;
+  rating: number;
   description: string;
-  itinerary: string[];
+  itinerary: { day: number; title: string; description: string }[];
   included: string[];
   notIncluded: string[];
-};
+}
 
-export type Review = {
+export interface Review {
   id: string;
-  itemType: 'destination' | 'hotel' | 'tour';
-  itemId: string;
-  author: string;
-  avatar: string;
-  rating: number; // 1..5
-  dateISO: string;
+  targetId: string;
+  authorName: string;
+  authorAvatar: any;
+  rating: number;
+  date: string;
   text: string;
-};
+}
 
-export type BookingKind = 'hotel' | 'tour';
-export type BookingStatus = 'upcoming' | 'completed' | 'cancelled';
-
-export type BookingDraft = {
-  kind: BookingKind;
-  itemId: string; // hotelId or tourId
-  roomId?: string; // for hotel booking
-  checkInISO: string;
-  checkOutISO: string;
-  guests: number;
-};
-
-export type BookingRecord = {
+export interface Booking {
   id: string;
-  kind: BookingKind;
-  itemId: string;
-  roomId?: string;
-  checkInISO: string;
-  checkOutISO: string;
-  guests: number;
-  base: number;
-  taxes: number;
-  fees: number;
-  total: number;
-  status: BookingStatus;
-  createdAtISO: string;
-};
+  userId: string;
+  type: 'Hotel' | 'Tour';
+  targetId: string;
+  title: string;
+  image: any;
+  startDate: string;
+  endDate?: string;
+  status: 'Upcoming' | 'Completed' | 'Cancelled';
+  totalPrice: number;
+  details?: any; // Room details or Tour details
+}
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  avatar: any;
+}
