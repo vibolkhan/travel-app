@@ -1,112 +1,103 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// File: app/(tabs)/explore.tsx
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import React, { useMemo, useState } from 'react';
+import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Category, Destination } from '../../types/models';
 
-export default function TabTwoScreen() {
+import { router } from 'expo-router';
+import { DestinationCard } from '../../components/cards/DestinationCard';
+import { Chip } from '../../components/ui/Chip';
+import { SearchBar } from '../../components/ui/SearchBar';
+import { DESTINATIONS } from '../../data/destinations';
+
+const CATEGORIES: (Category | 'All')[] = ['All', 'Beach', 'Mountain', 'City', 'Culture'];
+
+export default function ExploreTab() {
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>('All');
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return DESTINATIONS.filter((d) => {
+      const matchQ =
+        !q ||
+        d.name.toLowerCase().includes(q) ||
+        d.location.toLowerCase().includes(q) ||
+        d.category.toLowerCase().includes(q);
+      const matchC = category === 'All' || d.category === category;
+      return matchQ && matchC;
+    });
+  }, [query, category]);
+
+  const featured = filtered.slice(0, 3);
+  const grid = filtered;
+
+  const openDetail = (item: Destination) => {
+    router.push({ pathname: '/explore/[id]', params: { id: item.id } });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.h1}>Discover your next trip</Text>
+      <Text style={styles.sub}>Search destinations, save favorites, and book in a few taps.</Text>
+
+      <View style={{ marginTop: 14 }}>
+        <SearchBar value={query} onChangeText={setQuery} placeholder="Search destinations…" />
+      </View>
+
+      <View style={{ marginTop: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {CATEGORIES.map((c) => (
+            <Chip key={c} label={c} selected={c === category} onPress={() => setCategory(c)} />
+          ))}
+        </ScrollView>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Featured</Text>
+        <FlatList
+          data={featured}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(i) => i.id}
+          ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+          renderItem={({ item }) => (
+            <View style={{ width: 260 }}>
+              <DestinationCard item={item} onPress={() => openDetail(item)} />
+            </View>
+          )}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>All destinations</Text>
+
+        <View style={styles.grid}>
+          {grid.map((item) => (
+            <View key={item.id} style={styles.gridItem}>
+              <DestinationCard item={item} onPress={() => openDetail(item)} />
+            </View>
+          ))}
+        </View>
+
+        {grid.length === 0 ? (
+          <View style={{ paddingVertical: 16 }}>
+            <Text style={{ color: '#6B7280', fontWeight: '700' }}>
+              No results. Try a different keyword or category.
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+  container: { padding: 16, paddingBottom: 28, backgroundColor: '#FFFFFF' },
+  h1: { fontSize: 22, fontWeight: '900', color: '#111827' },
+  sub: { marginTop: 6, fontSize: 14, lineHeight: 20, color: '#6B7280', fontWeight: '600' },
+  section: { marginTop: 18 },
+  sectionTitle: { fontSize: 16, fontWeight: '900', color: '#111827', marginBottom: 10 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  gridItem: { width: '48%', marginBottom: 12 },
 });
