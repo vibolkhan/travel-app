@@ -38,7 +38,7 @@ A multi-step process to reserve a trip.
 - **Persistence**: Favorites are saved locally using `AsyncStorage`, so they remain even after closing the app.
 
 ### 5. ✈️ Trips (History)
-- Lists all upcoming and past bookings.
+- Lists all pending and past bookings.
 - Managed via `BookingContext` and persisted locally.
 
 ## 🛠 Technical Stack

@@ -1,137 +1,344 @@
-import { Stack } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconSymbol, IconSymbolName } from '../../components/IconSymbol';
+
+import { useAuth } from '../../context/AuthContext';
 
 export default function AccountScreen() {
-    const user = {
-        name: 'Alex Johnson',
-        email: 'alex.johnson@example.com',
-        avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
+    const router = useRouter();
+    const { user, isAuthenticated, logout } = useAuth();
+    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+    const [areNotificationsEnabled, setAreNotificationsEnabled] = useState(false);
+
+    const handleEdit = (field: string) => {
+        Alert.alert('Edit', `Edit ${field}`);
     };
 
-    const MENU_ITEMS: { icon: IconSymbolName; label: string }[] = [
-        { icon: 'person', label: 'Personal Information' },
-        { icon: 'creditcard', label: 'Payment Methods' }, // creditcard might not be in mapping, using checkmark for now or adding it
-        { icon: 'bell', label: 'Notifications' }, // bell might be missing
-        { icon: 'gear', label: 'Settings' }, // gear might be missing
-        { icon: 'arrow.right.square', label: 'Logout' }, // arrow.right.square might be missing
-    ];
+    const handleAddPayment = () => {
+        Alert.alert('Add Payment', 'Add New Payment Method clicked');
+    };
 
-    // Safe mapping fallback
-    const getIcon = (name: string): IconSymbolName => {
-        // Just returning a default if not strictly typed in the array above to match IconSymbolName
-        return 'chevron.right' as IconSymbolName;
+    const handleLogout = async () => {
+        try {
+            await logout();
+            router.replace('/auth/login');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to logout');
+        }
+    };
+
+    const handleLogin = () => {
+        router.push('/auth/login');
     };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
-            <View style={styles.header}>
-                <Text style={styles.title}>Profile</Text>
-            </View>
 
-            <View style={styles.profileHeader}>
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
-                <View style={styles.profileInfo}>
-                    <Text style={styles.name}>{user.name}</Text>
-                    <Text style={styles.email}>{user.email}</Text>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+
+                {/* Header Section */}
+                <View style={styles.header}>
+                    <View style={styles.avatarContainer}>
+                        {isAuthenticated && (user?.name || user?.email) ? (
+                            <View style={[styles.avatar, styles.initialsAvatar]}>
+                                <Text style={styles.avatarInitials}>
+                                    {(user?.name || user?.email || 'G').charAt(0).toUpperCase()}
+                                </Text>
+                            </View>
+                        ) : (
+                            <Image
+                                source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
+                                style={styles.avatar}
+                            />
+                        )}
+                        {isAuthenticated && (
+                            <View style={styles.roleBadge}>
+                                <Text style={styles.roleText}>{user?.role || 'Traveler'}</Text>
+                            </View>
+                        )}
+                    </View>
+                    <Text style={styles.name}>{isAuthenticated ? (user?.name || 'User') : 'Guest'}</Text>
+                    <Text style={styles.email}>{isAuthenticated ? user?.email : 'Not logged in'}</Text>
+                    {!isAuthenticated && (
+                        <TouchableOpacity style={styles.loginPrompt} onPress={handleLogin}>
+                            <Text style={styles.loginPromptText}>Tap to Login</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
-                <TouchableOpacity style={styles.editBtn}>
-                    <IconSymbol name="pencil" size={20} color="#0a7ea4" />
-                </TouchableOpacity>
-            </View>
 
-            <ScrollView contentContainerStyle={styles.menu}>
-                <MenuItem icon="person.fill" label="Personal Information" />
-                <MenuItem icon="creditcard" label="Payment Methods" />
-                <MenuItem icon="heart.fill" label="Favorites" />
-                <MenuItem icon="gear" label="Settings" />
-                <MenuItem icon="arrow.right.square" label="Logout" isDestructive />
+                {/* Account Settings */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Account Settings</Text>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Change Password</Text>
+                        <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit('Password')}>
+                            <Text style={styles.smallButtonText}>EDIT</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Two-Factor Authentication</Text>
+                        <Switch
+                            value={is2FAEnabled}
+                            onValueChange={setIs2FAEnabled}
+                            trackColor={{ false: '#e0e0e0', true: '#cce5ff' }}
+                            thumbColor={is2FAEnabled ? '#ffa31a' : '#f4f3f4'}
+                        />
+                    </View>
+                </View>
+
+                {/* Payment Methods */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Payment Methods</Text>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Visa ending in 1234</Text>
+                        <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit('Payment Method')}>
+                            <Text style={styles.smallButtonText}>EDIT</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Add New Payment Method</Text>
+                        <TouchableOpacity style={[styles.smallButton, styles.addButton]} onPress={handleAddPayment}>
+                            <Text style={[styles.smallButtonText, styles.addButtonText]}>ADD</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Preferences */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Preferences</Text>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Language</Text>
+                        <View style={styles.dropdownMock}>
+                            <Text style={styles.dropdownText}>English</Text>
+                            <Text style={styles.dropdownIcon}>▼</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Notifications</Text>
+                        <Switch
+                            value={areNotificationsEnabled}
+                            onValueChange={setAreNotificationsEnabled}
+                            trackColor={{ false: '#e0e0e0', true: '#cce5ff' }}
+                            thumbColor={areNotificationsEnabled ? '#ffa31a' : '#f4f3f4'}
+                        />
+                    </View>
+                </View>
+
+                {/* Logout Button */}
+                {isAuthenticated && (
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                        <Text style={styles.logoutButtonText}>LOGOUT</Text>
+                    </TouchableOpacity>
+                )}
+
             </ScrollView>
-
         </SafeAreaView>
     );
 }
 
-const MenuItem = ({ icon, label, isDestructive }: { icon: any, label: string, isDestructive?: boolean }) => (
-    <TouchableOpacity style={styles.menuItem}>
-        <View style={styles.menuIconBox}>
-            <IconSymbol name={icon} size={20} color={isDestructive ? 'red' : '#333'} />
-        </View>
-        <Text style={[styles.menuLabel, isDestructive && styles.destructiveLabel]}>{label}</Text>
-        <IconSymbol name="chevron.right" size={20} color="#ccc" />
-    </TouchableOpacity>
-);
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5', // Light gray background as often seen in glassmorphism/cards
+    },
+    scrollContent: {
+        padding: 20,
+        paddingBottom: 40,
+        alignItems: 'center',
     },
     header: {
-        paddingHorizontal: 20,
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#0a7ea4',
-    },
-    profileHeader: {
-        flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
         marginBottom: 30,
+        marginTop: 20,
     },
     avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        marginRight: 16,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 3,
+        borderColor: '#fff', // Optional: adds a nice border
     },
-    profileInfo: {
-        flex: 1,
+    avatarContainer: {
+        position: 'relative',
+        marginBottom: 15,
+        alignItems: 'center',
+    },
+    initialsAvatar: {
+        backgroundColor: '#0a7ea4',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarInitials: {
+        fontSize: 40,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    roleBadge: {
+        position: 'absolute',
+        bottom: -5,
+        backgroundColor: '#ffa31a',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    roleText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#fff',
+        textTransform: 'uppercase',
     },
     name: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 4,
+        fontSize: 24,
+        fontWeight: '500', // Medium weight looking font
+        color: '#333',
+        letterSpacing: 0.5,
+        marginBottom: 5,
     },
     email: {
         fontSize: 14,
+        color: '#888',
+        textDecorationLine: 'underline',
+    },
+    section: {
+        backgroundColor: '#fff',
+        width: '100%',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 20,
+        // Shadow for "card" feel
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#333',
+        marginBottom: 20,
+        letterSpacing: 1,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    label: {
+        fontSize: 14,
         color: '#666',
+        fontWeight: '400',
     },
-    editBtn: {
-        padding: 8,
+    smallButton: {
+        backgroundColor: '#f9f9f9',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        borderRadius: 4,
+        minWidth: 70,
+        alignItems: 'center',
+        // Slight shadow to match button look in image
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1,
+        elevation: 1,
     },
-    menu: {
+    smallButtonText: {
+        color: '#888',
+        fontSize: 12,
+        fontWeight: '600',
+        letterSpacing: 1,
+    },
+    addButton: {
+        backgroundColor: '#f4f8e6', // Light greenish yellow from image
+        borderColor: '#e0e8c0',
+    },
+    addButtonText: {
+        color: '#a0a0a0',
+    },
+    upgradeContainer: {
+        marginBottom: 20,
+        zIndex: 1, // Ensure it appears above if needed, though mostly visual flow
+    },
+    upgradeButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 10,
         paddingHorizontal: 20,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    menuItem: {
+    upgradeButtonText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#000',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+    },
+    dropdownMock: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        backgroundColor: '#f0f0f0',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 4,
     },
-    menuIconBox: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#f5f5f5',
+    dropdownText: {
+        fontSize: 14,
+        color: '#888',
+        marginRight: 6,
+    },
+    dropdownIcon: {
+        fontSize: 10,
+        color: '#888',
+    },
+    logoutButton: {
+        width: '100%',
+        backgroundColor: '#f4f8e6', // Similar to ADD button background
+        paddingVertical: 18,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#e0e8c0',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 16,
+        marginTop: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
     },
-    menuLabel: {
-        flex: 1,
+    logoutButtonText: {
         fontSize: 16,
         fontWeight: '500',
+        color: '#b0b0b0', // Grayish text for logout
+        letterSpacing: 1,
     },
-    destructiveLabel: {
-        color: 'red',
-    }
+    loginPrompt: {
+        marginTop: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: '#0a7ea4',
+        borderRadius: 8,
+    },
+    loginPromptText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 14,
+    },
 });

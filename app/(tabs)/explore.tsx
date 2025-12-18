@@ -1,12 +1,13 @@
 import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DestinationCard } from '../../components/cards/DestinationCard';
 import { Chip } from '../../components/ui/Chip';
 import { SearchBar } from '../../components/ui/SearchBar';
-import { destinations } from '../../data/destinations';
+import { Destination } from '../../types/models'; // Import Type
+import { fetchDestinations } from '../../utils/api'; // Import API
 
 const CATEGORIES = ['All', 'Beach', 'Mountain', 'City', 'Culture'];
 
@@ -15,12 +16,51 @@ export default function ExploreScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
+    // State for API data
+    const [destinations, setDestinations] = useState<Destination[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadDestinations();
+    }, []);
+
+    const loadDestinations = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await fetchDestinations();
+            setDestinations(data);
+        } catch (err) {
+            setError('Failed to load destinations. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredDestinations = destinations.filter((dest) => {
         const matchesCategory = selectedCategory === 'All' || dest.category === selectedCategory;
         const matchesSearch = dest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             dest.location.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+                <ActivityIndicator size="large" color="#0a7ea4" />
+            </SafeAreaView>
+        );
+    }
+
+    if (error) {
+        return (
+            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+                <Text style={styles.errorText}>{error}</Text>
+                <Chip label="Retry" selected={true} onPress={loadDestinations} />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -63,6 +103,8 @@ export default function ExploreScreen() {
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={<Text style={styles.emptyText}>No destinations found.</Text>}
+                refreshing={loading}
+                onRefresh={loadDestinations}
             />
         </SafeAreaView>
     );
@@ -109,5 +151,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
         color: '#666',
+    },
+    center: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorText: {
+        fontSize: 16,
+        color: 'red',
+        marginBottom: 20,
     }
 });

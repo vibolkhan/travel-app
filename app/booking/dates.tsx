@@ -6,18 +6,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
-import { addDays, getDaysDifference } from '../../utils/dates';
+import { addDays, formatDate, getDaysDifference } from '../../utils/dates';
 
 export default function BookingDatesScreen() {
     const { type, targetId, detailId } = useLocalSearchParams<{ type: 'Hotel' | 'Tour', targetId: string, detailId?: string }>();
     const router = useRouter();
 
     // Mock dates for simplicity, in real app use a Calendar component
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-    const [endDate, setEndDate] = useState(addDays(new Date(), 3).toISOString().split('T')[0]);
+    const [checkIn, setCheckIn] = useState(formatDate(new Date().toISOString()));
+    const [checkOut, setCheckOut] = useState(formatDate(addDays(new Date(), 3).toISOString()));
     const [guests, setGuests] = useState(2);
 
-    const days = getDaysDifference(startDate, endDate);
+    const days = getDaysDifference(checkIn, checkOut);
 
     const handleContinue = () => {
         router.push({
@@ -26,8 +26,8 @@ export default function BookingDatesScreen() {
                 type,
                 targetId,
                 detailId,
-                startDate,
-                endDate,
+                checkIn,
+                checkOut,
                 guests: guests.toString(),
                 days: days.toString()
             }
@@ -51,9 +51,9 @@ export default function BookingDatesScreen() {
                             <IconSymbol name="calendar" size={20} color="#666" />
                             <TextInput
                                 style={styles.input}
-                                value={startDate}
-                                onChangeText={setStartDate}
-                                placeholder="YYYY-MM-DD"
+                                value={checkIn}
+                                onChangeText={setCheckIn}
+                                placeholder="DD/MMM/YYYY"
                             />
                         </View>
                     </View>
@@ -63,9 +63,9 @@ export default function BookingDatesScreen() {
                             <IconSymbol name="calendar" size={20} color="#666" />
                             <TextInput
                                 style={styles.input}
-                                value={endDate}
-                                onChangeText={setEndDate}
-                                placeholder="YYYY-MM-DD"
+                                value={checkOut}
+                                onChangeText={setCheckOut}
+                                placeholder="DD/MMM/YYYY"
                             />
                         </View>
                     </View>

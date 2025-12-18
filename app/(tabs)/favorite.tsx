@@ -9,9 +9,10 @@ import { TourCard } from '../../components/cards/TourCard';
 import { Chip } from '../../components/ui/Chip';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useFavorites } from '../../context/FavoritesContext';
-import { destinations } from '../../data/destinations';
-import { hotels } from '../../data/hotels';
-import { tours } from '../../data/tours';
+import { Destination, Hotel, Tour } from '../../types/models';
+import { fetchDestinations, fetchHotels, fetchTours } from '../../utils/api';
+
+import { ActivityIndicator } from 'react-native';
 
 const TABS = ['Destinations', 'Hotels', 'Tours'];
 
@@ -20,9 +21,36 @@ export default function FavoriteScreen() {
     const [activeTab, setActiveTab] = useState('Destinations');
     const { favorites } = useFavorites();
 
+    const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
+    const [allHotels, setAllHotels] = useState<Hotel[]>([]);
+    const [allTours, setAllTours] = useState<Tour[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [destData, hotelsData, toursData] = await Promise.all([
+                fetchDestinations(),
+                fetchHotels(),
+                fetchTours()
+            ]);
+            setAllDestinations(destData);
+            setAllHotels(hotelsData);
+            setAllTours(toursData);
+        } catch (error) {
+            console.error('Failed to load favorites data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const renderContent = () => {
         if (activeTab === 'Destinations') {
-            const favDestinations = destinations.filter(d => favorites.some(f => f.id === d.id && f.type === 'destination'));
+            const favDestinations = allDestinations.filter(d => favorites.some(f => f.id === d.id && f.type === 'destination'));
             if (favDestinations.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any destinations yet." />;
             return (
                 <FlatList
@@ -39,7 +67,7 @@ export default function FavoriteScreen() {
                 />
             );
         } else if (activeTab === 'Hotels') {
-            const favHotels = hotels.filter(h => favorites.some(f => f.id === h.id && f.type === 'hotel'));
+            const favHotels = allHotels.filter(h => favorites.some(f => f.id === h.id && f.type === 'hotel'));
             if (favHotels.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any hotels yet." icon="bed.double" />;
             return (
                 <FlatList
@@ -55,7 +83,7 @@ export default function FavoriteScreen() {
                 />
             );
         } else {
-            const favTours = tours.filter(t => favorites.some(f => f.id === t.id && f.type === 'tour'));
+            const favTours = allTours.filter(t => favorites.some(f => f.id === t.id && f.type === 'tour'));
             if (favTours.length === 0) return <EmptyState title="No Favorites" message="You haven't saved any tours yet." icon="airplane" />;
             return (
                 <FlatList
@@ -90,7 +118,13 @@ export default function FavoriteScreen() {
                 ))}
             </View>
             <View style={styles.content}>
-                {renderContent()}
+                {loading ? (
+                    <View style={styles.center}>
+                        <ActivityIndicator size="large" color="#0a7ea4" />
+                    </View>
+                ) : (
+                    renderContent()
+                )}
             </View>
         </SafeAreaView>
     );
@@ -122,5 +156,10 @@ const styles = StyleSheet.create({
     listContent: {
         paddingHorizontal: 20,
         paddingBottom: 20,
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });

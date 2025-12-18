@@ -1,19 +1,41 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
 import { RatingStars } from '../../components/ui/RatingStars';
 import { useFavorites } from '../../context/FavoritesContext';
-import { tours } from '../../data/tours';
+import { Tour } from '../../types/models';
+import { fetchTourById } from '../../utils/api';
 
 export default function TourDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const tour = tours.find(t => t.id === id);
+    const [tour, setTour] = useState<Tour | null>(null);
+    const [loading, setLoading] = useState(true);
     const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+
+    useEffect(() => {
+        loadTour();
+    }, [id]);
+
+    const loadTour = async () => {
+        try {
+            setLoading(true);
+            const data = await fetchTourById(id);
+            setTour(data);
+        } catch (error) {
+            console.error('Failed to load tour:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return <View style={styles.center}><ActivityIndicator size="large" color="#0a7ea4" /></View>;
+    }
 
     if (!tour) return <View style={styles.center}><Text>Tour not found</Text></View>;
 

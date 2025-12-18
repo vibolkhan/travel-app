@@ -7,13 +7,14 @@ import { Chip } from '../../components/ui/Chip';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useBooking } from '../../context/BookingContext';
 import { Booking } from '../../types/models';
+import { formatDate } from '../../utils/dates';
 
-const TABS = ['Upcoming', 'Completed', 'Cancelled'] as const;
+const TABS = ['pending', 'completed', 'cancelled'] as const;
 
 export default function HistoryScreen() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Upcoming');
-    const { getBookingsByStatus } = useBooking();
+    const [activeTab, setActiveTab] = useState<typeof TABS[number]>('pending');
+    const { getBookingsByStatus, loading, refreshBookings } = useBooking();
     const bookings = getBookingsByStatus(activeTab);
 
     const renderBookingItem = ({ item }: { item: Booking }) => (
@@ -33,7 +34,7 @@ export default function HistoryScreen() {
                         <Text style={[styles.typeText, { color: item.type === 'Hotel' ? '#1565c0' : '#7b1fa2' }]}>{item.type}</Text>
                     </View>
                 </View>
-                <Text style={styles.date}>{item.startDate} {item.endDate ? `- ${item.endDate}` : ''}</Text>
+                <Text style={styles.date}>{formatDate(item.checkIn)} {item.checkOut ? `- ${formatDate(item.checkOut)}` : ''}</Text>
                 <View style={styles.footer}>
                     <Text style={styles.price}>${item.totalPrice}</Text>
                     <Text style={[styles.status, { color: getStatusColor(item.status) }]}>{item.status}</Text>
@@ -44,9 +45,9 @@ export default function HistoryScreen() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Upcoming': return '#0a7ea4';
-            case 'Completed': return 'green';
-            case 'Cancelled': return 'red';
+            case 'pending': return '#0a7ea4';
+            case 'completed': return 'green';
+            case 'cancelled': return 'red';
             default: return '#666';
         }
     };
@@ -73,6 +74,8 @@ export default function HistoryScreen() {
                 keyExtractor={item => item.id}
                 renderItem={renderBookingItem}
                 contentContainerStyle={styles.listContent}
+                refreshing={loading}
+                onRefresh={refreshBookings}
                 ListEmptyComponent={<EmptyState title="No Trips" message={`You have no ${activeTab.toLowerCase()} trips.`} icon="airplane" />}
             />
         </SafeAreaView>

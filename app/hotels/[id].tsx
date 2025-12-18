@@ -1,19 +1,44 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
 import { RatingStars } from '../../components/ui/RatingStars';
 import { useFavorites } from '../../context/FavoritesContext';
-import { hotels } from '../../data/hotels';
+import { rooms } from '../../data/rooms';
+import { Hotel } from '../../types/models';
+import { fetchHotelById } from '../../utils/api';
 
 export default function HotelDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const hotel = hotels.find(h => h.id === id);
+    const [hotel, setHotel] = useState<Hotel | null>(null);
+    const [loading, setLoading] = useState(true);
     const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+
+    useEffect(() => {
+        loadHotel();
+    }, [id]);
+
+    const loadHotel = async () => {
+        try {
+            setLoading(true);
+            const data = await fetchHotelById(id);
+            setHotel(data);
+        } catch (error) {
+            console.error('Failed to load hotel:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const hotelRooms = rooms.filter((r) => r.hotelId === id);
+
+    if (loading) {
+        return <View style={styles.center}><ActivityIndicator size="large" color="#0a7ea4" /></View>;
+    }
 
     if (!hotel) return <View style={styles.center}><Text>Hotel not found</Text></View>;
 

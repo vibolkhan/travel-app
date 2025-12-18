@@ -8,7 +8,7 @@ interface EmptyStateProps {
     icon?: IconSymbolName;
 }
 
-export function EmptyState({ title, message, icon = 'search' }: EmptyStateProps) {
+export function EmptyState({ title, message, icon = 'magnifyingglass' }: EmptyStateProps) {
     return (
         <View style={styles.container}>
             <IconSymbol name={icon} size={48} color="#ccc" />

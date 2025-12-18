@@ -1,16 +1,38 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { ReviewItem } from '../../components/cards/ReviewItem';
 import { Button } from '../../components/ui/Button';
-import { reviews } from '../../data/reviews';
+import { Review } from '../../types/models';
+import { fetchReviews } from '../../utils/api';
 
 export default function ReviewsScreen() {
     const { targetId } = useLocalSearchParams<{ targetId: string }>();
     const router = useRouter();
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredReviews = reviews.filter(r => r.targetId === targetId);
+    useEffect(() => {
+        loadReviews();
+    }, [targetId]);
+
+    const loadReviews = async () => {
+        try {
+            setLoading(true);
+            const data = await fetchReviews(targetId);
+            setReviews(data);
+        } catch (error) {
+            console.error('Failed to load reviews:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredReviews = targetId
+        ? reviews.filter(r => r.targetId === targetId)
+        : reviews;
+
     const averageRating = filteredReviews.length > 0
         ? (filteredReviews.reduce((acc, r) => acc + r.rating, 0) / filteredReviews.length).toFixed(1)
         : 'New';
@@ -26,13 +48,17 @@ export default function ReviewsScreen() {
                 <Button title="Write Review" onPress={() => router.push({ pathname: '/reviews/write', params: { targetId } })} style={styles.btn} />
             </View>
 
-            <FlatList
-                data={filteredReviews}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => <ReviewItem review={item} />}
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={<Text style={styles.emptyText}>No reviews yet. Be the first!</Text>}
-            />
+            {loading ? (
+                <ActivityIndicator size="large" color="#0a7ea4" style={{ marginTop: 20 }} />
+            ) : (
+                <FlatList
+                    data={filteredReviews}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => <ReviewItem review={item} />}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={<Text style={styles.emptyText}>No reviews yet. Be the first!</Text>}
+                />
+            )}
         </View>
     );
 }

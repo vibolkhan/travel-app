@@ -28,6 +28,17 @@ const MAPPING = {
     'checkmark.circle.fill': 'check-circle',
     'plus.circle': 'add-circle-outline',
     'minus.circle': 'remove-circle-outline',
+    'ellipsis.circle': 'more-horiz',
+    'square.and.pencil': 'edit',
+    'creditcard': 'credit-card',
+    'gear': 'settings',
+    'bell': 'notifications',
+    'arrow.right.square': 'exit-to-app',
+    'pencil': 'edit',
+    'phone.fill': 'phone',
+    'arrow.up.circle.fill': 'arrow-circle-up',
+    'lock.fill': 'lock',
+    'layers': 'layers',
 } as const; // using as const to infer keys better if needed, but for now we rely on the type below
 
 export type IconSymbolName = keyof typeof MAPPING;

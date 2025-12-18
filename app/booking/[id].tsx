@@ -1,19 +1,30 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
 import { useBooking } from '../../context/BookingContext';
+import { formatDate } from '../../utils/dates';
 
 export default function BookingDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const { bookings, cancelBooking } = useBooking();
+    const { bookings, cancelBooking, loading } = useBooking();
 
     const booking = bookings.find(b => b.id === id);
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.center}>
+                    <ActivityIndicator size="large" color="#0a7ea4" />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     if (!booking) {
         return (
@@ -30,7 +41,21 @@ export default function BookingDetailScreen() {
         );
     }
 
-    const handleCancel = () => {
+    const handleCancel = async () => {
+        console.log('Canceling booking:', booking.id);
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm("Are you sure you want to cancel this booking?");
+            if (confirmed) {
+                try {
+                    await cancelBooking(booking.id);
+                    router.back();
+                } catch (e) {
+                    console.error('Cancellation failed:', e);
+                }
+            }
+            return;
+        }
+
         Alert.alert(
             "Cancel Booking",
             "Are you sure you want to cancel this booking?",
@@ -39,9 +64,13 @@ export default function BookingDetailScreen() {
                 {
                     text: "Yes, Cancel",
                     style: "destructive",
-                    onPress: () => {
-                        cancelBooking(booking.id);
-                        router.back();
+                    onPress: async () => {
+                        try {
+                            await cancelBooking(booking.id);
+                            router.back();
+                        } catch (e) {
+                            console.error('Cancellation failed:', e);
+                        }
                     }
                 }
             ]
@@ -78,7 +107,7 @@ export default function BookingDetailScreen() {
                     <Text style={styles.label}>Dates</Text>
                     <View style={styles.row}>
                         <IconSymbol name="calendar" size={20} color="#666" />
-                        <Text style={styles.value}>{booking.startDate} {booking.endDate ? `- ${booking.endDate}` : ''}</Text>
+                        <Text style={styles.value}>{formatDate(booking.checkIn)} {booking.checkOut ? `- ${formatDate(booking.checkOut)}` : ''}</Text>
                     </View>
                 </View>
 
@@ -87,21 +116,40 @@ export default function BookingDetailScreen() {
                     <Text style={[styles.value, styles.price]}>${booking.totalPrice}</Text>
                 </View>
 
-                {booking.details && (
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Details</Text>
-                        {Object.entries(booking.details).map(([key, value]) => (
-                            <View key={key} style={styles.detailRow}>
-                                <Text style={styles.detailKey}>{key}: </Text>
-                                <Text style={styles.detailValue}>{String(value)}</Text>
+                <View style={styles.section}>
+                    <Text style={styles.label}>Booking Details</Text>
+                    <View style={styles.detailCard}>
+                        <View style={styles.detailItem}>
+                            <IconSymbol name="person.2.fill" size={18} color="#666" />
+                            <Text style={styles.detailText}>
+                                <Text style={styles.detailLabel}>Guests: </Text>
+                                <Text style={styles.detailValue}>{booking.numGuests || booking.details?.numGuests || '1'} People</Text>
+                            </Text>
+                        </View>
+
+                        {booking.type === 'Hotel' && (booking.details?.roomNumber) && (
+                            <View style={styles.detailItem}>
+                                <IconSymbol name="bed.double.fill" size={18} color="#666" />
+                                <Text style={styles.detailText}>
+                                    <Text style={styles.detailLabel}>Room: </Text>
+                                    <Text style={styles.detailValue}>#{booking.details.roomNumber}</Text>
+                                </Text>
                             </View>
-                        ))}
+                        )}
+
+                        <View style={styles.detailItem}>
+                            <IconSymbol name="creditcard" size={18} color="#666" />
+                            <Text style={styles.detailText}>
+                                <Text style={styles.detailLabel}>Total Paid: </Text>
+                                <Text style={styles.detailValue}>${booking.totalPrice}</Text>
+                            </Text>
+                        </View>
                     </View>
-                )}
+                </View>
 
             </ScrollView>
 
-            {booking.status === 'Upcoming' && (
+            {booking.status === 'pending' && (
                 <View style={styles.footer}>
                     <Button
                         title="Cancel Booking"
@@ -116,9 +164,9 @@ export default function BookingDetailScreen() {
 
 const getStatusColor = (status: string) => {
     switch (status) {
-        case 'Upcoming': return '#e3f2fd'; // Light blue
-        case 'Completed': return '#e8f5e9'; // Light green
-        case 'Cancelled': return '#ffebee'; // Light red
+        case 'pending': return '#e3f2fd'; // Light blue
+        case 'completed': return '#e8f5e9'; // Light green
+        case 'cancelled': return '#ffebee'; // Light red
         default: return '#f5f5f5';
     }
 };
@@ -198,18 +246,24 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginLeft: 0,
     },
-    detailRow: {
+    detailCard: {
+        backgroundColor: '#f9f9f9',
+        borderRadius: 12,
+        padding: 16,
+    },
+    detailItem: {
         flexDirection: 'row',
-        marginBottom: 4,
+        alignItems: 'center',
+        marginBottom: 12,
     },
-    detailKey: {
+    detailText: {
         fontSize: 16,
-        textTransform: 'capitalize',
+        marginLeft: 12,
+        color: '#333',
+    },
+    detailLabel: {
         color: '#666',
-    },
-    detailValue: {
-        fontSize: 16,
-        fontWeight: '500',
+        fontWeight: '400',
     },
     footer: {
         padding: 20,

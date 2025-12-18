@@ -1,99 +1,110 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Booking } from '../types/models';
+import { cancelBookingApi, createBooking, fetchMyBookings } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 interface BookingContextType {
     bookings: Booking[];
-    addBooking: (booking: Booking) => void;
-    getBookingsByStatus: (status: 'Upcoming' | 'Completed' | 'Cancelled') => Booking[];
-    cancelBooking: (id: string) => void;
+    loading: boolean;
+    addBooking: (booking: Partial<Booking>) => Promise<Booking>;
+    getBookingsByStatus: (status: 'pending' | 'completed' | 'cancelled') => Booking[];
+    cancelBooking: (id: string) => Promise<void>;
+    refreshBookings: () => Promise<void>;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export function BookingProvider({ children }: { children: React.ReactNode }) {
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(false);
+    const { isAuthenticated, user } = useAuth();
 
     useEffect(() => {
-        loadBookings();
-    }, []);
+        if (isAuthenticated) {
+            loadBookings();
+        } else {
+            setBookings([]);
+        }
+    }, [isAuthenticated]);
 
     const loadBookings = async () => {
         try {
+            setLoading(true);
+            const data = await fetchMyBookings();
+            setBookings(data);
+            // We could still save to AsyncStorage as a fallback/cache if desired,
+            // but let's prioritize the API for now.
+            await AsyncStorage.setItem('booking-storage-context', JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to load bookings from API, trying storage', e);
             const stored = await AsyncStorage.getItem('booking-storage-context');
             if (stored) {
-                const parsedBookings: Booking[] = JSON.parse(stored);
-
-                // Auto-complete past bookings
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-
-                let hasUpdates = false;
-                const updatedBookings = parsedBookings.map(b => {
-                    if (b.status === 'Upcoming') {
-                        // Use endDate if available, otherwise startDate
-                        const dateStr = b.endDate || b.startDate;
-
-                        // Parse YYYY-MM-DD to local date to avoid UTC timezone issues
-                        const [y, m, d] = dateStr.split('-').map(Number);
-                        const bookingDate = new Date(y, m - 1, d);
-
-                        // If the booking date is strictly before today (midnight), it's completed
-                        if (bookingDate < now) {
-                            hasUpdates = true;
-                            return { ...b, status: 'Completed' as const };
-                        }
-                    }
-                    return b;
-                });
-
-                if (hasUpdates) {
-                    setBookings(updatedBookings);
-                    // We define saveBookings below, but we can't call it easily here if it relies on setBookings helper which saves to storage.
-                    // Actually, saveBookings helper just overwrites storage.
-                    // Code below defines saveBookings. We should manually save to storage here to avoid issues or move logic.
-                    // Or easier: just call the storage setItem directly here for the update, since saveBookings isn't hoisted or available in closure in the same way depending on definition (it's defined below).
-                    // Actually saveBookings is defined in the component scope, so it IS available.
-                    // But wait, saveBookings calls setBookings.
-                    // Let's just update storage and state.
-                    await AsyncStorage.setItem('booking-storage-context', JSON.stringify(updatedBookings));
-                    setBookings(updatedBookings);
-                } else {
-                    setBookings(parsedBookings);
-                }
+                setBookings(JSON.parse(stored));
             }
-        } catch (e) {
-            console.error('Failed to load bookings', e);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const saveBookings = async (newBookings: Booking[]) => {
+    const addBooking = async (bookingData: Partial<Booking>): Promise<Booking> => {
         try {
-            setBookings(newBookings);
-            await AsyncStorage.setItem('booking-storage-context', JSON.stringify(newBookings));
+            if (!user) {
+                throw new Error('User must be logged in to create a booking');
+            }
+
+            // Map the frontend model to the API model if necessary
+            // In our case, the API expects hotelId, roomId, tourId, startDate, endDate, totalPrice.
+            const apiData = {
+                userId: user.id,
+                hotelId: bookingData.type === 'Hotel' ? bookingData.targetId : undefined,
+                roomId: bookingData.details?.roomId,
+                tourId: bookingData.type === 'Tour' ? bookingData.targetId : undefined,
+                checkIn: bookingData.checkIn,
+                checkOut: bookingData.checkOut,
+                totalPrice: bookingData.totalPrice,
+                numGuests: bookingData.details?.numGuests || 1,
+            };
+
+            const newBooking = await createBooking(apiData);
+            setBookings(prev => [newBooking, ...prev]);
+            return newBooking;
         } catch (e) {
-            console.error('Failed to save bookings', e);
+            console.error('Failed to add booking:', e);
+            throw e;
         }
     };
 
-    const addBooking = (booking: Booking) => {
-        if (bookings.some((b) => b.id === booking.id)) return;
-        saveBookings([booking, ...bookings]);
-    };
-
-    const getBookingsByStatus = (status: 'Upcoming' | 'Completed' | 'Cancelled') => {
+    const getBookingsByStatus = (status: Booking['status']) => {
         return bookings.filter((b) => b.status === status);
     };
 
-    const cancelBooking = (id: string) => {
-        const updatedBookings = bookings.map(b =>
-            b.id === id ? { ...b, status: 'Cancelled' as const } : b
-        );
-        saveBookings(updatedBookings);
+    const cancelBooking = async (id: string) => {
+        try {
+            const success = await cancelBookingApi(id);
+            if (success) {
+                setBookings(prev => prev.map(b =>
+                    b.id === id ? { ...b, status: 'cancelled' as const } : b
+                ));
+            }
+        } catch (e) {
+            console.error('Failed to cancel booking:', e);
+        }
+    };
+
+    const refreshBookings = async () => {
+        await loadBookings();
     };
 
     return (
-        <BookingContext.Provider value={{ bookings, addBooking, getBookingsByStatus, cancelBooking }}>
+        <BookingContext.Provider value={{
+            bookings,
+            loading,
+            addBooking,
+            getBookingsByStatus,
+            cancelBooking,
+            refreshBookings
+        }}>
             {children}
         </BookingContext.Provider>
     );

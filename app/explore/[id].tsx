@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useFavorites } from '@/context/FavoritesContext';
 import { HotelCard } from '../../components/cards/HotelCard';
@@ -8,20 +8,45 @@ import { TourCard } from '../../components/cards/TourCard';
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
-import { destinations } from '../../data/destinations';
-import { hotels } from '../../data/hotels';
-import { tours } from '../../data/tours';
+import { Destination, Hotel, Tour } from '../../types/models';
+import { fetchDestinationById, fetchHotelsByDestinationId, fetchToursByDestinationId } from '../../utils/api';
 
 export default function DestinationDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
 
-    const destination = destinations.find((d) => d.id === id);
-    const destinationHotels = hotels.filter((h) => h.destinationId === id);
-    const destinationTours = tours.filter((t) => t.destinationId === id);
+    const [destination, setDestination] = useState<Destination | null>(null);
+    const [tours, setTours] = useState<Tour[]>([]);
+    const [hotels, setHotels] = useState<Hotel[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const { isFavorite, addFavorite, removeFavorite } = useFavorites();
-    const isFav = destination ? isFavorite(destination.id, 'destination') : false;
+
+    useEffect(() => {
+        loadDestinationData();
+    }, [id]);
+
+    const loadDestinationData = async () => {
+        try {
+            setLoading(true);
+            const [destData, toursData, hotelsData] = await Promise.all([
+                fetchDestinationById(id),
+                fetchToursByDestinationId(id),
+                fetchHotelsByDestinationId(id)
+            ]);
+            setDestination(destData);
+            setTours(toursData || []);
+            setHotels(hotelsData || []);
+        } catch (error) {
+            console.error('Failed to load destination:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return <View style={styles.center}><ActivityIndicator size="large" color="#0a7ea4" /></View>;
+    }
 
     if (!destination) {
         return (
@@ -30,6 +55,12 @@ export default function DestinationDetailScreen() {
             </View>
         );
     }
+
+    // No longer need local filtering as we fetch by destinationId now
+    const destinationHotels = hotels;
+    const destinationTours = tours;
+
+    const isFav = isFavorite(destination.id, 'destination');
 
     const toggleFavorite = () => {
         if (isFav) {
@@ -77,7 +108,15 @@ export default function DestinationDetailScreen() {
 
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Popular Hotels</Text>
-                        <Button title="See All" variant="outline" onPress={() => router.push('/hotels')} style={styles.seeAllBtn} />
+                        <Button
+                            title="See All"
+                            variant="outline"
+                            onPress={() => router.push({
+                                pathname: '/hotels',
+                                params: { destinationId: id, title: `Hotels in ${destination.name}` }
+                            })}
+                            style={styles.seeAllBtn}
+                        />
                     </View>
                     {destinationHotels.length > 0 ? (
                         destinationHotels.map(hotel => (
@@ -93,7 +132,15 @@ export default function DestinationDetailScreen() {
 
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Top Tours</Text>
-                        <Button title="See All" variant="outline" onPress={() => router.push('/tours')} style={styles.seeAllBtn} />
+                        <Button
+                            title="See All"
+                            variant="outline"
+                            onPress={() => router.push({
+                                pathname: '/tours',
+                                params: { destinationId: id, title: `Tours in ${destination.name}` }
+                            })}
+                            style={styles.seeAllBtn}
+                        />
                     </View>
                     {destinationTours.length > 0 ? (
                         destinationTours.map(tour => (

@@ -10,29 +10,63 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ room, onSelect }: RoomCardProps) {
+    const mainImage = room.images?.[0] || 'https://images.unsplash.com/photo-1590490360182-c33d57733427';
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, !room.isAvailable && styles.disabledContainer]}>
             <Image
-                source={typeof room.image === 'string' ? { uri: room.image } : room.image}
-                style={styles.image}
+                source={typeof mainImage === 'string' ? { uri: mainImage } : mainImage}
+                style={[styles.image, !room.isAvailable && styles.grayscale]}
             />
+            {!room.isAvailable && (
+                <View style={styles.unavailableBadge}>
+                    <Text style={styles.unavailableText}>UNAVAILABLE</Text>
+                </View>
+            )}
             <View style={styles.content}>
-                <Text style={styles.name}>{room.name}</Text>
+                <View style={styles.titleRow}>
+                    <Text style={styles.name}>{room.roomType} Room</Text>
+                    <Text style={styles.roomNumber}>#{room.roomNumber}</Text>
+                </View>
+
                 <View style={styles.infoRow}>
                     <IconSymbol name="person.2.fill" size={16} color="#666" />
                     <Text style={styles.infoText}>{room.capacity} Guests</Text>
-                    <View style={styles.dot} />
-                    <IconSymbol name="bed.double" size={16} color="#666" />
-                    <Text style={styles.infoText}>{room.bedType}</Text>
+
+                    {room.floor !== null && room.floor !== undefined && (
+                        <>
+                            <View style={styles.dot} />
+                            <IconSymbol name="layers" size={16} color="#666" />
+                            <Text style={styles.infoText}>Floor {room.floor}</Text>
+                        </>
+                    )}
                 </View>
+
+                {room.description && (
+                    <Text style={styles.description} numberOfLines={2}>
+                        {room.description}
+                    </Text>
+                )}
+
                 <View style={styles.amenities}>
-                    {room.amenities.slice(0, 3).map((amenity, index) => (
-                        <Text key={index} style={styles.amenity}>• {amenity}</Text>
+                    {(room.amenities || []).slice(0, 4).map((amenity, index) => (
+                        <View key={index} style={styles.amenityBadge}>
+                            <Text style={styles.amenityText}>{amenity}</Text>
+                        </View>
                     ))}
                 </View>
+
                 <View style={styles.footer}>
-                    <Text style={styles.price}>${room.price}<Text style={styles.perNight}>/night</Text></Text>
-                    <Button title="Select" onPress={onSelect} style={styles.button} />
+                    <View>
+                        <Text style={styles.price}>${room.pricePerNight}<Text style={styles.perNight}>/night</Text></Text>
+                    </View>
+                    <Button
+                        title={room.isAvailable ? "Select Room" : "Sold Out"}
+                        onPress={onSelect}
+                        style={styles.button}
+                        disabled={!room.isAvailable}
+                        variant={room.isAvailable ? "primary" : "outline"}
+                    />
                 </View>
             </View>
         </View>
@@ -42,73 +76,127 @@ export function RoomCard({ room, onSelect }: RoomCardProps) {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
-        borderRadius: 12,
+        borderRadius: 16,
         overflow: 'hidden',
-        marginBottom: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
         elevation: 3,
+    },
+    disabledContainer: {
+        opacity: 0.8,
+        borderColor: '#e0e0e0',
     },
     image: {
         width: '100%',
-        height: 180,
+        height: 200,
         resizeMode: 'cover',
+    },
+    grayscale: {
+        opacity: 0.6,
+    },
+    unavailableBadge: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+    unavailableText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1,
     },
     content: {
         padding: 16,
     },
-    name: {
-        fontSize: 18,
-        fontWeight: 'bold',
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 8,
+    },
+    name: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1a1a1a',
+    },
+    roomNumber: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#0a7ea4',
+        backgroundColor: '#f0faff',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
     },
     infoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     infoText: {
         fontSize: 14,
         color: '#666',
-        marginLeft: 4,
-        marginRight: 8,
+        marginLeft: 6,
+        marginRight: 10,
     },
     dot: {
-        width: 4,
-        height: 4,
+        width: 4, height: 4,
         borderRadius: 2,
         backgroundColor: '#ccc',
-        marginRight: 8,
+        marginRight: 10,
+    },
+    description: {
+        fontSize: 14,
+        color: '#777',
+        lineHeight: 20,
+        marginBottom: 16,
     },
     amenities: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        marginBottom: 16,
+        marginBottom: 20,
+        gap: 8,
     },
-    amenity: {
-        fontSize: 14,
-        color: '#666',
-        marginRight: 8,
+    amenityBadge: {
+        backgroundColor: '#f5f5f5',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 20,
+    },
+    amenityText: {
+        fontSize: 12,
+        color: '#555',
     },
     footer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+        paddingTop: 16,
     },
     price: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 22,
+        fontWeight: '800',
         color: '#0a7ea4',
     },
     perNight: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#666',
+        color: '#888',
     },
     button: {
-        paddingVertical: 8,
+        paddingVertical: 10,
         paddingHorizontal: 20,
+        borderRadius: 10,
     }
 });
