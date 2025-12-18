@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useAppColors } from '../../hooks/useAppColors';
 
 interface ChipProps {
     label: string;
@@ -8,16 +9,19 @@ interface ChipProps {
 }
 
 export function Chip({ label, selected, onPress }: ChipProps) {
+    const colors = useAppColors();
     return (
         <TouchableOpacity
             style={[
                 styles.container,
-                selected ? styles.selectedContainer : styles.unselectedContainer,
+                selected
+                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                    : { backgroundColor: colors.card, borderColor: colors.border },
             ]}
             onPress={onPress}
             activeOpacity={0.7}
         >
-            <Text style={[styles.text, selected ? styles.selectedText : styles.unselectedText]}>
+            <Text style={[styles.text, { color: selected ? '#fff' : colors.subtext }]}>
                 {label}
             </Text>
         </TouchableOpacity>
@@ -32,22 +36,8 @@ const styles = StyleSheet.create({
         marginRight: 8,
         borderWidth: 1,
     },
-    unselectedContainer: {
-        backgroundColor: '#fff',
-        borderColor: '#e0e0e0',
-    },
-    selectedContainer: {
-        backgroundColor: '#0a7ea4',
-        borderColor: '#0a7ea4',
-    },
     text: {
         fontSize: 14,
         fontWeight: '500',
-    },
-    unselectedText: {
-        color: '#666',
-    },
-    selectedText: {
-        color: '#fff',
     },
 });

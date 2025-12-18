@@ -17,7 +17,7 @@ import {
 } from '../types/models';
 import { formatDate } from './dates';
 
-const API_BASE_URL = 'https://travel-api-dn8n.onrender.com/api/v1';
+const API_BASE_URL = 'http://localhost:4000/api/v1';
 
 // Token storage
 let authToken: string | null = null;

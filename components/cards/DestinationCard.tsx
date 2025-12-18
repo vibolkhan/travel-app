@@ -3,6 +3,7 @@ import { DimensionValue, Image, StyleSheet, Text, TouchableOpacity, View } from 
 import { Destination } from '../../types/models';
 import { IconSymbol } from '../IconSymbol';
 import { RatingStars } from '../ui/RatingStars';
+import { useAppColors } from '../../hooks/useAppColors';
 
 interface DestinationCardProps {
     destination: Destination;
@@ -11,9 +12,11 @@ interface DestinationCardProps {
 }
 
 export function DestinationCard({ destination, onPress, width = 200 }: DestinationCardProps) {
+    const colors = useAppColors();
+
     return (
         <TouchableOpacity
-            style={[styles.container, { width } as any]}
+            style={[styles.container, { width, backgroundColor: colors.card } as any]}
             onPress={onPress}
             activeOpacity={0.9}
         >
@@ -23,14 +26,14 @@ export function DestinationCard({ destination, onPress, width = 200 }: Destinati
             />
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Text style={styles.name} numberOfLines={1}>{destination.name}</Text>
+                    <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{destination.name}</Text>
                     <RatingStars rating={destination.rating} showText={true} />
                 </View>
                 <View style={styles.locationRow}>
-                    <IconSymbol name="mappin.and.ellipse" size={14} color="#666" />
-                    <Text style={styles.location} numberOfLines={1}>{destination.location}</Text>
+                    <IconSymbol name="mappin.and.ellipse" size={14} color={colors.subtext} />
+                    <Text style={[styles.location, { color: colors.subtext }]} numberOfLines={1}>{destination.location}</Text>
                 </View>
-                <Text style={styles.price}>${destination.pricePerDay}/day</Text>
+                <Text style={[styles.price, { color: colors.primary }]}>${destination.pricePerDay}/day</Text>
             </View>
         </TouchableOpacity>
     );
@@ -38,7 +41,6 @@ export function DestinationCard({ destination, onPress, width = 200 }: Destinati
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 16,
@@ -76,12 +78,10 @@ const styles = StyleSheet.create({
     },
     location: {
         fontSize: 14,
-        color: '#666',
         marginLeft: 4,
     },
     price: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#0a7ea4',
     },
 });

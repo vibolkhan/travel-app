@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Tour } from '../../types/models';
 import { IconSymbol } from '../IconSymbol';
 import { RatingStars } from '../ui/RatingStars';
+import { useAppColors } from '../../hooks/useAppColors';
 
 interface TourCardProps {
     tour: Tour;
@@ -10,27 +11,28 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour, onPress }: TourCardProps) {
+    const colors = useAppColors();
     return (
-        <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.9}>
+        <TouchableOpacity style={[styles.container, { backgroundColor: colors.card }]} onPress={onPress} activeOpacity={0.9}>
             <Image
                 source={typeof tour.image === 'string' ? { uri: tour.image } : tour.image}
                 style={styles.image}
             />
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Text style={styles.name}>{tour.name}</Text>
+                    <Text style={[styles.name, { color: colors.text }]}>{tour.name}</Text>
                     <RatingStars rating={tour.rating} />
                 </View>
                 <View style={styles.infoRow}>
-                    <IconSymbol name="clock.fill" size={14} color="#666" />
-                    <Text style={styles.infoText}>{tour.duration}</Text>
-                    <View style={styles.dot} />
-                    <IconSymbol name="person.2.fill" size={14} color="#666" />
-                    <Text style={styles.infoText}>Max {tour.groupSize}</Text>
+                    <IconSymbol name="clock.fill" size={14} color={colors.subtext} />
+                    <Text style={[styles.infoText, { color: colors.subtext }]}>{tour.duration}</Text>
+                    <View style={[styles.dot, { backgroundColor: colors.border }]} />
+                    <IconSymbol name="person.2.fill" size={14} color={colors.subtext} />
+                    <Text style={[styles.infoText, { color: colors.subtext }]}>Max {tour.groupSize}</Text>
                 </View>
-                <Text style={styles.description} numberOfLines={2}>{tour.description}</Text>
+                <Text style={[styles.description, { color: colors.subtext }]} numberOfLines={2}>{tour.description}</Text>
                 <View style={styles.footer}>
-                    <Text style={styles.price}>${tour.price}</Text>
+                    <Text style={[styles.price, { color: colors.primary }]}>${tour.price}</Text>
                 </View>
             </View>
         </TouchableOpacity>

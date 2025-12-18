@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
@@ -6,6 +6,7 @@ import { ActivityIndicator, View, useColorScheme } from "react-native";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { BookingProvider } from "../context/BookingContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
+import { DarkTheme, LightTheme } from "../constants/navigationTheme";
 
 function InitialLayout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -54,9 +55,9 @@ export default function RootLayout() {
     <AuthProvider>
       <BookingProvider>
         <FavoritesProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : LightTheme}>
             <InitialLayout />
-            <StatusBar style="auto" />
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>
         </FavoritesProvider>
       </BookingProvider>
