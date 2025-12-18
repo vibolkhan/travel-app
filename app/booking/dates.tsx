@@ -8,9 +8,14 @@ import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
 import { addDays, formatDate, getDaysDifference } from '../../utils/dates';
 
+import { useColorScheme } from 'react-native';
+import { Colors } from '../../constants/Colors';
+
 export default function BookingDatesScreen() {
     const { type, targetId, detailId } = useLocalSearchParams<{ type: 'Hotel' | 'Tour', targetId: string, detailId?: string }>();
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
 
     // Mock dates for simplicity, in real app use a Calendar component
     const [checkIn, setCheckIn] = useState(formatDate(new Date().toISOString()));
@@ -35,69 +40,70 @@ export default function BookingDatesScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{
                 title: 'Select Dates',
+                headerStyle: { backgroundColor: themeColors.background },
+                headerTintColor: themeColors.text,
                 headerLeft: () => <BackButton />
             }} />
 
             <View style={styles.content}>
-                <Text style={styles.title}>When are you going?</Text>
+                <Text style={[styles.title, { color: themeColors.text }]}>When are you going?</Text>
 
                 <View style={styles.dateRow}>
                     <View style={styles.dateInputGroup}>
-                        <Text style={styles.label}>Check-in</Text>
-                        <View style={styles.inputBox}>
-                            <IconSymbol name="calendar" size={20} color="#666" />
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Check-in</Text>
+                        <View style={[styles.inputBox, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}>
+                            <IconSymbol name="calendar" size={20} color={themeColors.subtext} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: themeColors.text }]}
                                 value={checkIn}
                                 onChangeText={setCheckIn}
                                 placeholder="DD/MMM/YYYY"
+                                placeholderTextColor={themeColors.subtext}
                             />
                         </View>
                     </View>
                     <View style={styles.dateInputGroup}>
-                        <Text style={styles.label}>Check-out</Text>
-                        <View style={styles.inputBox}>
-                            <IconSymbol name="calendar" size={20} color="#666" />
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Check-out</Text>
+                        <View style={[styles.inputBox, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}>
+                            <IconSymbol name="calendar" size={20} color={themeColors.subtext} />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { color: themeColors.text }]}
                                 value={checkOut}
                                 onChangeText={setCheckOut}
                                 placeholder="DD/MMM/YYYY"
+                                placeholderTextColor={themeColors.subtext}
                             />
                         </View>
                     </View>
                 </View>
 
-                <Text style={styles.daysText}>{days} nights stay</Text>
+                <Text style={[styles.daysText, { color: themeColors.primary }]}>{days} nights stay</Text>
 
-                <Text style={[styles.title, { marginTop: 32 }]}>Guests</Text>
-                <View style={styles.guestRow}>
-                    <Text style={styles.guestLabel}>Adults</Text>
+                <Text style={[styles.title, { marginTop: 32, color: themeColors.text }]}>Guests</Text>
+                <View style={[styles.guestRow, { borderBottomColor: themeColors.border }]}>
+                    <Text style={[styles.guestLabel, { color: themeColors.text }]}>Adults</Text>
                     <View style={styles.counter}>
-                        <TouchableOpacity onPress={() => setGuests(Math.max(1, guests - 1))} style={styles.counterBtn}>
-                            <IconSymbol name="minus.circle" size={24} color="#0a7ea4" />
-                            {/* minus.circle might not be mapped, fallback to generic or update mapping if needed. 
-                        Wait, IconSymbol requires mapped name. I'll use remove/add circle or similar if available, 
-                        or just text. 'minus' and 'plus' are standard. I'll check my mapping.
-                        I don't have minus/plus in mapping. I'll simply use text or a mapped icon like 'chevron.left'/'chevron.right' 
-                        or just plain View circle. I'll stick to 'chevron.left' for decrement.
-                    */}
-                            {/* <Text style={styles.counterBtnText}>-</Text> */}
+                        <TouchableOpacity
+                            onPress={() => setGuests(Math.max(1, guests - 1))}
+                            style={[styles.counterBtn, { backgroundColor: themeColors.card }]}
+                        >
+                            <IconSymbol name="minus" size={20} color={themeColors.primary} />
                         </TouchableOpacity>
-                        <Text style={styles.guestCount}>{guests}</Text>
-                        <TouchableOpacity onPress={() => setGuests(guests + 1)} style={styles.counterBtn}>
-                            {/* <Text style={styles.counterBtnText}>+</Text> */}
-                            <IconSymbol name="plus.circle" size={24} color="#0a7ea4" />
-                            {/* 'plus.circle' not in mapping. I'll use valid icons. */}
+                        <Text style={[styles.guestCount, { color: themeColors.text }]}>{guests}</Text>
+                        <TouchableOpacity
+                            onPress={() => setGuests(guests + 1)}
+                            style={[styles.counterBtn, { backgroundColor: themeColors.card }]}
+                        >
+                            <IconSymbol name="plus" size={20} color={themeColors.primary} />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { borderTopColor: themeColors.border }]}>
                 <Button title="Continue" onPress={handleContinue} />
             </View>
         </SafeAreaView>

@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconSymbol } from '../../components/IconSymbol';
@@ -9,45 +9,24 @@ import { Button } from '../../components/ui/Button';
 import { useBooking } from '../../context/BookingContext';
 import { formatDate } from '../../utils/dates';
 
+import { Colors } from '../../constants/Colors';
+
 export default function BookingDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const { bookings, cancelBooking, loading } = useBooking();
 
     const booking = bookings.find(b => b.id === id);
 
-    if (loading) {
-        return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#0a7ea4" />
-                </View>
-            </SafeAreaView>
-        );
-    }
-
-    if (!booking) {
-        return (
-            <SafeAreaView style={styles.container}>
-                <Stack.Screen options={{
-                    headerShown: true,
-                    title: 'Booking Details',
-                    headerLeft: () => <BackButton fallbackHref="/(tabs)/history" />
-                }} />
-                <View style={styles.center}>
-                    <Text>Booking not found</Text>
-                </View>
-            </SafeAreaView>
-        );
-    }
-
     const handleCancel = async () => {
-        console.log('Canceling booking:', booking.id);
+        console.log('Canceling booking:', booking?.id);
         if (Platform.OS === 'web') {
             const confirmed = window.confirm("Are you sure you want to cancel this booking?");
             if (confirmed) {
                 try {
-                    await cancelBooking(booking.id);
+                    if (booking) await cancelBooking(booking.id);
                     router.back();
                 } catch (e) {
                     console.error('Cancellation failed:', e);
@@ -66,7 +45,7 @@ export default function BookingDetailScreen() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            await cancelBooking(booking.id);
+                            if (booking) await cancelBooking(booking.id);
                             router.back();
                         } catch (e) {
                             console.error('Cancellation failed:', e);
@@ -77,70 +56,98 @@ export default function BookingDetailScreen() {
         );
     };
 
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+                <View style={styles.center}>
+                    <ActivityIndicator size="large" color={themeColors.primary} />
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    if (!booking) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+                <Stack.Screen options={{
+                    headerShown: true,
+                    title: 'Booking Details',
+                    headerLeft: () => <BackButton fallbackHref="/(tabs)/history" />
+                }} />
+                <View style={styles.center}>
+                    <Text style={{ color: themeColors.text }}>Booking not found</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{
                 headerShown: true,
                 title: 'Booking Details',
                 headerShadowVisible: false,
+                headerStyle: { backgroundColor: themeColors.background },
+                headerTintColor: themeColors.text,
                 headerLeft: () => <BackButton />
             }} />
 
             <ScrollView style={styles.content}>
                 <Image source={typeof booking.image === 'string' ? { uri: booking.image } : booking.image} style={styles.image} />
 
-                <View style={styles.header}>
+                <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
                     <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                            <View style={[styles.typeBadge, { backgroundColor: booking.type === 'Hotel' ? '#e3f2fd' : '#f3e5f5', marginRight: 8 }]}>
-                                <Text style={[styles.typeText, { color: booking.type === 'Hotel' ? '#1565c0' : '#7b1fa2' }]}>{booking.type}</Text>
+                            <View style={[styles.typeBadge, { backgroundColor: booking.type === 'Hotel' ? (colorScheme === 'dark' ? '#1a237e' : '#e3f2fd') : (colorScheme === 'dark' ? '#4a148c' : '#f3e5f5'), marginRight: 8 }]}>
+                                <Text style={[styles.typeText, { color: booking.type === 'Hotel' ? (colorScheme === 'dark' ? '#bbdefb' : '#1565c0') : (colorScheme === 'dark' ? '#e1bee7' : '#7b1fa2') }]}>{booking.type}</Text>
                             </View>
-                            <Text style={styles.title}>{booking.title}</Text>
+                            <Text style={[styles.title, { color: themeColors.text }]}>{booking.title}</Text>
                         </View>
                     </View>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) }]}>
-                        <Text style={styles.statusText}>{booking.status}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status, colorScheme) }]}>
+                        <Text style={[styles.statusText, { color: colorScheme === 'dark' ? '#eee' : '#333' }]}>{booking.status}</Text>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.label}>Dates</Text>
+                <View style={[styles.section, { borderBottomColor: themeColors.border }]}>
+                    <Text style={[styles.label, { color: themeColors.subtext }]}>Dates</Text>
                     <View style={styles.row}>
-                        <IconSymbol name="calendar" size={20} color="#666" />
-                        <Text style={styles.value}>{formatDate(booking.checkIn)} {booking.checkOut ? `- ${formatDate(booking.checkOut)}` : ''}</Text>
+                        <IconSymbol name="calendar" size={20} color={themeColors.subtext} />
+                        <Text style={[styles.value, { color: themeColors.text }]}>{formatDate(booking.checkIn)} {booking.checkOut ? `- ${formatDate(booking.checkOut)}` : ''}</Text>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.label}>Total Price</Text>
-                    <Text style={[styles.value, styles.price]}>${booking.totalPrice}</Text>
+                <View style={[styles.section, { borderBottomColor: themeColors.border }]}>
+                    <Text style={[styles.label, { color: themeColors.subtext }]}>Total Price</Text>
+                    <Text style={[styles.value, styles.price, { color: themeColors.primary }]}>${booking.totalPrice}</Text>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.label}>Booking Details</Text>
-                    <View style={styles.detailCard}>
+                <View style={[styles.section, { borderBottomColor: themeColors.border }]}>
+                    <Text style={[styles.label, { color: themeColors.subtext }]}>Booking Details</Text>
+                    <View style={[styles.detailCard, { backgroundColor: themeColors.card }]}>
                         <View style={styles.detailItem}>
-                            <IconSymbol name="person.2.fill" size={18} color="#666" />
-                            <Text style={styles.detailText}>
-                                <Text style={styles.detailLabel}>Guests: </Text>
+                            <IconSymbol name="person.2.fill" size={18} color={themeColors.subtext} />
+                            <Text style={[styles.detailText, { color: themeColors.text }]}>
+                                <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Guests: </Text>
                                 <Text style={styles.detailValue}>{booking.numGuests || booking.details?.numGuests || '1'} People</Text>
                             </Text>
                         </View>
 
                         {booking.type === 'Hotel' && (booking.details?.roomNumber) && (
                             <View style={styles.detailItem}>
-                                <IconSymbol name="bed.double.fill" size={18} color="#666" />
-                                <Text style={styles.detailText}>
-                                    <Text style={styles.detailLabel}>Room: </Text>
+                                <IconSymbol name="bed.double.fill" size={18} color={themeColors.subtext} />
+                                <Text style={[styles.detailText, { color: themeColors.text }]}>
+                                    <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Room: </Text>
                                     <Text style={styles.detailValue}>#{booking.details.roomNumber}</Text>
                                 </Text>
                             </View>
                         )}
 
                         <View style={styles.detailItem}>
-                            <IconSymbol name="creditcard" size={18} color="#666" />
-                            <Text style={styles.detailText}>
-                                <Text style={styles.detailLabel}>Total Paid: </Text>
+                            <IconSymbol name="creditcard" size={18} color={themeColors.subtext} />
+                            <Text style={[styles.detailText, { color: themeColors.text }]}>
+                                <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Total Paid: </Text>
                                 <Text style={styles.detailValue}>${booking.totalPrice}</Text>
                             </Text>
                         </View>
@@ -150,11 +157,11 @@ export default function BookingDetailScreen() {
             </ScrollView>
 
             {booking.status === 'pending' && (
-                <View style={styles.footer}>
+                <View style={[styles.footer, { borderTopColor: themeColors.border }]}>
                     <Button
                         title="Cancel Booking"
                         onPress={handleCancel}
-                        style={{ backgroundColor: '#ff4444' }}
+                        style={{ backgroundColor: themeColors.error }}
                     />
                 </View>
             )}
@@ -162,12 +169,12 @@ export default function BookingDetailScreen() {
     );
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string, scheme: 'light' | 'dark') => {
     switch (status) {
-        case 'pending': return '#e3f2fd'; // Light blue
-        case 'completed': return '#e8f5e9'; // Light green
-        case 'cancelled': return '#ffebee'; // Light red
-        default: return '#f5f5f5';
+        case 'pending': return scheme === 'dark' ? '#1a237e' : '#e3f2fd';
+        case 'completed': return scheme === 'dark' ? '#1b5e20' : '#e8f5e9';
+        case 'cancelled': return scheme === 'dark' ? '#b71c1c' : '#ffebee';
+        default: return scheme === 'dark' ? '#333' : '#f5f5f5';
     }
 };
 

@@ -6,13 +6,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DestinationCard } from '../../components/cards/DestinationCard';
 import { Chip } from '../../components/ui/Chip';
 import { SearchBar } from '../../components/ui/SearchBar';
-import { Destination } from '../../types/models'; // Import Type
-import { fetchDestinations } from '../../utils/api'; // Import API
+import { Destination } from '../../types/models';
+import { fetchDestinations } from '../../utils/api';
+
+import { useColorScheme } from 'react-native';
+import { Colors } from '../../constants/Colors';
 
 const CATEGORIES = ['All', 'Beach', 'Mountain', 'City', 'Culture'];
 
 export default function ExploreScreen() {
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -47,28 +52,28 @@ export default function ExploreScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
-                <ActivityIndicator size="large" color="#0a7ea4" />
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
             </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
-                <Text style={styles.errorText}>{error}</Text>
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{error}</Text>
                 <Chip label="Retry" selected={true} onPress={loadDestinations} />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <View style={styles.header}>
-                <Text style={styles.title}>Explore the</Text>
-                <Text style={styles.subtitle}>Beautiful World!</Text>
+                <Text style={[styles.title, { color: themeColors.subtext }]}>Explore the</Text>
+                <Text style={[styles.subtitle, { color: themeColors.primary }]}>Beautiful World!</Text>
             </View>
 
             <View style={styles.searchContainer}>
@@ -102,7 +107,7 @@ export default function ExploreScreen() {
                 )}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<Text style={styles.emptyText}>No destinations found.</Text>}
+                ListEmptyComponent={<Text style={[styles.emptyText, { color: themeColors.subtext }]}>No destinations found.</Text>}
                 refreshing={loading}
                 onRefresh={loadDestinations}
             />

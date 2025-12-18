@@ -1,19 +1,21 @@
+import { useFavorites } from '@/context/FavoritesContext';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-
-import { useFavorites } from '@/context/FavoritesContext';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { HotelCard } from '../../components/cards/HotelCard';
 import { TourCard } from '../../components/cards/TourCard';
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
+import { Colors } from '../../constants/Colors';
 import { Destination, Hotel, Tour } from '../../types/models';
 import { fetchDestinationById, fetchHotelsByDestinationId, fetchToursByDestinationId } from '../../utils/api';
 
 export default function DestinationDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
 
     const [destination, setDestination] = useState<Destination | null>(null);
     const [tours, setTours] = useState<Tour[]>([]);
@@ -45,13 +47,13 @@ export default function DestinationDetailScreen() {
     };
 
     if (loading) {
-        return <View style={styles.center}><ActivityIndicator size="large" color="#0a7ea4" /></View>;
+        return <View style={[styles.center, { backgroundColor: themeColors.background }]}><ActivityIndicator size="large" color={themeColors.primary} /></View>;
     }
 
     if (!destination) {
         return (
-            <View style={styles.center}>
-                <Text>Destination not found</Text>
+            <View style={[styles.center, { backgroundColor: themeColors.background }]}>
+                <Text style={{ color: themeColors.text }}>Destination not found</Text>
             </View>
         );
     }
@@ -74,40 +76,42 @@ export default function DestinationDetailScreen() {
         <>
             <Stack.Screen options={{
                 title: destination.name,
+                headerStyle: { backgroundColor: themeColors.background },
+                headerTintColor: themeColors.text,
                 headerLeft: () => <BackButton />,
                 headerRight: () => (
                     <IconSymbol
                         name={isFav ? "heart.fill" : "heart"}
                         size={24}
-                        color={isFav ? "red" : "#007AFF"}
+                        color={isFav ? "red" : themeColors.primary}
                         style={{ marginRight: 16 }}
-                        onPress={toggleFavorite} // Note: This might need wrapping in TouchableOpacity depending on IconSymbol impl
+                        onPress={toggleFavorite}
                     />
                 )
             }} />
-            <ScrollView style={styles.container}>
+            <ScrollView style={[styles.container, { backgroundColor: themeColors.background }]}>
                 <Image
                     source={typeof destination.image === 'string' ? { uri: destination.image } : destination.image}
                     style={styles.image}
                 />
-                <View style={styles.content}>
+                <View style={[styles.content, { backgroundColor: themeColors.background }]}>
                     <View style={styles.header}>
-                        <Text style={styles.name}>{destination.name}</Text>
-                        <View style={styles.ratingBox}>
+                        <Text style={[styles.name, { color: themeColors.text }]}>{destination.name}</Text>
+                        <View style={[styles.ratingBox, { backgroundColor: themeColors.card }]}>
                             <IconSymbol name="star.fill" size={16} color="#FFD700" />
-                            <Text style={styles.ratingText}>{destination.rating}</Text>
+                            <Text style={[styles.ratingText, { color: themeColors.text }]}>{destination.rating}</Text>
                         </View>
                     </View>
 
                     <View style={styles.locationRow}>
-                        <IconSymbol name="mappin.and.ellipse" size={16} color="#666" />
-                        <Text style={styles.location}>{destination.location}</Text>
+                        <IconSymbol name="mappin.and.ellipse" size={16} color={themeColors.subtext} />
+                        <Text style={[styles.location, { color: themeColors.subtext }]}>{destination.location}</Text>
                     </View>
 
-                    <Text style={styles.description}>{destination.description}</Text>
+                    <Text style={[styles.description, { color: themeColors.subtext }]}>{destination.description}</Text>
 
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Popular Hotels</Text>
+                        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Popular Hotels</Text>
                         <Button
                             title="See All"
                             variant="outline"
@@ -127,11 +131,11 @@ export default function DestinationDetailScreen() {
                             />
                         ))
                     ) : (
-                        <Text style={styles.emptyText}>No hotels found in this area.</Text>
+                        <Text style={[styles.emptyText, { color: themeColors.subtext }]}>No hotels found in this area.</Text>
                     )}
 
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Top Tours</Text>
+                        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Top Tours</Text>
                         <Button
                             title="See All"
                             variant="outline"
@@ -151,7 +155,7 @@ export default function DestinationDetailScreen() {
                             />
                         ))
                     ) : (
-                        <Text style={styles.emptyText}>No tours found in this area.</Text>
+                        <Text style={[styles.emptyText, { color: themeColors.subtext }]}>No tours found in this area.</Text>
                     )}
 
                 </View>

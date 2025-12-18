@@ -9,17 +9,22 @@ import { useBooking } from '../../context/BookingContext';
 import { Booking } from '../../types/models';
 import { formatDate } from '../../utils/dates';
 
+import { useColorScheme } from 'react-native';
+import { Colors } from '../../constants/Colors';
+
 const TABS = ['pending', 'completed', 'cancelled'] as const;
 
 export default function HistoryScreen() {
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const [activeTab, setActiveTab] = useState<typeof TABS[number]>('pending');
     const { getBookingsByStatus, loading, refreshBookings } = useBooking();
     const bookings = getBookingsByStatus(activeTab);
 
     const renderBookingItem = ({ item }: { item: Booking }) => (
         <TouchableOpacity
-            style={styles.card}
+            style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
             activeOpacity={0.9}
             onPress={() => router.push(`/booking/${item.id}`)}
         >
@@ -29,34 +34,34 @@ export default function HistoryScreen() {
             />
             <View style={styles.content}>
                 <View style={styles.headerRow}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <View style={[styles.typeBadge, { backgroundColor: item.type === 'Hotel' ? '#e3f2fd' : '#f3e5f5' }]}>
-                        <Text style={[styles.typeText, { color: item.type === 'Hotel' ? '#1565c0' : '#7b1fa2' }]}>{item.type}</Text>
+                    <Text style={[styles.cardTitle, { color: themeColors.text }]}>{item.title}</Text>
+                    <View style={[styles.typeBadge, { backgroundColor: item.type === 'Hotel' ? (colorScheme === 'dark' ? '#1a237e' : '#e3f2fd') : (colorScheme === 'dark' ? '#4a148c' : '#f3e5f5') }]}>
+                        <Text style={[styles.typeText, { color: item.type === 'Hotel' ? (colorScheme === 'dark' ? '#bbdefb' : '#1565c0') : (colorScheme === 'dark' ? '#e1bee7' : '#7b1fa2') }]}>{item.type}</Text>
                     </View>
                 </View>
-                <Text style={styles.date}>{formatDate(item.checkIn)} {item.checkOut ? `- ${formatDate(item.checkOut)}` : ''}</Text>
+                <Text style={[styles.date, { color: themeColors.subtext }]}>{formatDate(item.checkIn)} {item.checkOut ? `- ${formatDate(item.checkOut)}` : ''}</Text>
                 <View style={styles.footer}>
-                    <Text style={styles.price}>${item.totalPrice}</Text>
-                    <Text style={[styles.status, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+                    <Text style={[styles.price, { color: themeColors.text }]}>${item.totalPrice}</Text>
+                    <Text style={[styles.status, { color: getStatusColor(item.status, colorScheme) }]}>{item.status}</Text>
                 </View>
             </View>
         </TouchableOpacity>
     );
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: string, scheme: 'light' | 'dark') => {
         switch (status) {
-            case 'pending': return '#0a7ea4';
-            case 'completed': return 'green';
-            case 'cancelled': return 'red';
-            default: return '#666';
+            case 'pending': return themeColors.primary;
+            case 'completed': return scheme === 'dark' ? '#4caf50' : 'green';
+            case 'cancelled': return scheme === 'dark' ? '#f44336' : 'red';
+            default: return themeColors.subtext;
         }
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
             <View style={styles.header}>
-                <Text style={styles.title}>My Trips</Text>
+                <Text style={[styles.title, { color: themeColors.primary }]}>My Trips</Text>
             </View>
             <View style={styles.tabs}>
                 {TABS.map(tab => (

@@ -1,12 +1,14 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AccountScreen() {
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const { user, isAuthenticated, logout } = useAuth();
     const [is2FAEnabled, setIs2FAEnabled] = useState(false);
     const [areNotificationsEnabled, setAreNotificationsEnabled] = useState(false);
@@ -33,7 +35,7 @@ export default function AccountScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? themeColors.background : '#f5f5f5' }]} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -42,7 +44,7 @@ export default function AccountScreen() {
                 <View style={styles.header}>
                     <View style={styles.avatarContainer}>
                         {isAuthenticated && (user?.name || user?.email) ? (
-                            <View style={[styles.avatar, styles.initialsAvatar]}>
+                            <View style={[styles.avatar, styles.initialsAvatar, { borderColor: themeColors.background }]}>
                                 <Text style={styles.avatarInitials}>
                                     {(user?.name || user?.email || 'G').charAt(0).toUpperCase()}
                                 </Text>
@@ -50,91 +52,91 @@ export default function AccountScreen() {
                         ) : (
                             <Image
                                 source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
-                                style={styles.avatar}
+                                style={[styles.avatar, { borderColor: themeColors.background }]}
                             />
                         )}
                         {isAuthenticated && (
-                            <View style={styles.roleBadge}>
+                            <View style={[styles.roleBadge, { borderColor: themeColors.background }]}>
                                 <Text style={styles.roleText}>{user?.role || 'Traveler'}</Text>
                             </View>
                         )}
                     </View>
-                    <Text style={styles.name}>{isAuthenticated ? (user?.name || 'User') : 'Guest'}</Text>
-                    <Text style={styles.email}>{isAuthenticated ? user?.email : 'Not logged in'}</Text>
+                    <Text style={[styles.name, { color: themeColors.text }]}>{isAuthenticated ? (user?.name || 'User') : 'Guest'}</Text>
+                    <Text style={[styles.email, { color: themeColors.subtext }]}>{isAuthenticated ? user?.email : 'Not logged in'}</Text>
                     {!isAuthenticated && (
-                        <TouchableOpacity style={styles.loginPrompt} onPress={handleLogin}>
+                        <TouchableOpacity style={[styles.loginPrompt, { backgroundColor: themeColors.primary }]} onPress={handleLogin}>
                             <Text style={styles.loginPromptText}>Tap to Login</Text>
                         </TouchableOpacity>
                     )}
                 </View>
 
                 {/* Account Settings */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account Settings</Text>
+                <View style={[styles.section, { backgroundColor: themeColors.card }]}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Account Settings</Text>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Change Password</Text>
-                        <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit('Password')}>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Change Password</Text>
+                        <TouchableOpacity style={[styles.smallButton, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f9f9f9', borderColor: themeColors.border }]} onPress={() => handleEdit('Password')}>
                             <Text style={styles.smallButtonText}>EDIT</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Two-Factor Authentication</Text>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Two-Factor Authentication</Text>
                         <Switch
                             value={is2FAEnabled}
                             onValueChange={setIs2FAEnabled}
-                            trackColor={{ false: '#e0e0e0', true: '#cce5ff' }}
-                            thumbColor={is2FAEnabled ? '#ffa31a' : '#f4f3f4'}
+                            trackColor={{ false: colorScheme === 'dark' ? '#333' : '#e0e0e0', true: colorScheme === 'dark' ? '#1a237e' : '#cce5ff' }}
+                            thumbColor={is2FAEnabled ? themeColors.primary : '#f4f3f4'}
                         />
                     </View>
                 </View>
 
                 {/* Payment Methods */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Payment Methods</Text>
+                <View style={[styles.section, { backgroundColor: themeColors.card }]}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Payment Methods</Text>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Visa ending in 1234</Text>
-                        <TouchableOpacity style={styles.smallButton} onPress={() => handleEdit('Payment Method')}>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Visa ending in 1234</Text>
+                        <TouchableOpacity style={[styles.smallButton, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f9f9f9', borderColor: themeColors.border }]} onPress={() => handleEdit('Payment Method')}>
                             <Text style={styles.smallButtonText}>EDIT</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Add New Payment Method</Text>
-                        <TouchableOpacity style={[styles.smallButton, styles.addButton]} onPress={handleAddPayment}>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Add New Payment Method</Text>
+                        <TouchableOpacity style={[styles.smallButton, styles.addButton, { backgroundColor: colorScheme === 'dark' ? '#1b2601' : '#f4f8e6', borderColor: colorScheme === 'dark' ? '#2e3b0e' : '#e0e8c0' }]} onPress={handleAddPayment}>
                             <Text style={[styles.smallButtonText, styles.addButtonText]}>ADD</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Preferences */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Preferences</Text>
+                <View style={[styles.section, { backgroundColor: themeColors.card }]}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Preferences</Text>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Language</Text>
-                        <View style={styles.dropdownMock}>
-                            <Text style={styles.dropdownText}>English</Text>
-                            <Text style={styles.dropdownIcon}>▼</Text>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Language</Text>
+                        <View style={[styles.dropdownMock, { backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0' }]}>
+                            <Text style={[styles.dropdownText, { color: themeColors.subtext }]}>English</Text>
+                            <Text style={[styles.dropdownIcon, { color: themeColors.subtext }]}>▼</Text>
                         </View>
                     </View>
 
                     <View style={styles.row}>
-                        <Text style={styles.label}>Notifications</Text>
+                        <Text style={[styles.label, { color: themeColors.subtext }]}>Notifications</Text>
                         <Switch
                             value={areNotificationsEnabled}
                             onValueChange={setAreNotificationsEnabled}
-                            trackColor={{ false: '#e0e0e0', true: '#cce5ff' }}
-                            thumbColor={areNotificationsEnabled ? '#ffa31a' : '#f4f3f4'}
+                            trackColor={{ false: colorScheme === 'dark' ? '#333' : '#e0e0e0', true: colorScheme === 'dark' ? '#1a237e' : '#cce5ff' }}
+                            thumbColor={areNotificationsEnabled ? themeColors.primary : '#f4f3f4'}
                         />
                     </View>
                 </View>
 
                 {/* Logout Button */}
                 {isAuthenticated && (
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colorScheme === 'dark' ? '#1b2601' : '#f4f8e6', borderColor: colorScheme === 'dark' ? '#2e3b0e' : '#e0e8c0' }]} onPress={handleLogout}>
                         <Text style={styles.logoutButtonText}>LOGOUT</Text>
                     </TouchableOpacity>
                 )}

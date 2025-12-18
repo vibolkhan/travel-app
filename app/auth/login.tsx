@@ -1,13 +1,15 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { Button } from '../../components/ui/Button';
+import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -32,23 +34,24 @@ export default function LoginScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
             >
                 <View style={styles.content}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>Welcome Back</Text>
-                        <Text style={styles.subtitle}>Sign in to continue</Text>
+                        <Text style={[styles.title, { color: themeColors.primary }]}>Welcome Back</Text>
+                        <Text style={[styles.subtitle, { color: themeColors.subtext }]}>Sign in to continue</Text>
                     </View>
 
                     <View style={styles.form}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Email</Text>
+                            <Text style={[styles.label, { color: themeColors.text }]}>Email</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
                                 placeholder="Enter your email"
+                                placeholderTextColor={themeColors.subtext}
                                 value={email}
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
@@ -59,10 +62,11 @@ export default function LoginScreen() {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Password</Text>
+                            <Text style={[styles.label, { color: themeColors.text }]}>Password</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
                                 placeholder="Enter your password"
+                                placeholderTextColor={themeColors.subtext}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry
@@ -80,10 +84,10 @@ export default function LoginScreen() {
                         />
 
                         {isLoading && (
-                            <ActivityIndicator size="small" color="#0a7ea4" style={styles.loader} />
+                            <ActivityIndicator size="small" color={themeColors.primary} style={styles.loader} />
                         )}
 
-                        <Text style={styles.skipText} onPress={() => router.replace('/(tabs)/explore')}>
+                        <Text style={[styles.skipText, { color: themeColors.primary }]} onPress={() => router.replace('/(tabs)/explore')}>
                             Skip for now
                         </Text>
                     </View>

@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { IconSymbol } from '../../components/IconSymbol';
 import { BackButton } from '../../components/ui/BackButton';
 import { Button } from '../../components/ui/Button';
+import { Colors } from '../../constants/Colors';
 import { useBooking } from '../../context/BookingContext';
 import { Booking, Hotel, Room, Tour } from '../../types/models';
 import { fetchHotelById, fetchRoomsByHotelId, fetchTourById } from '../../utils/api';
@@ -12,7 +13,10 @@ import { formatDate } from '../../utils/dates';
 export default function BookingSummaryScreen() {
     const params = useLocalSearchParams();
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
     const { type, targetId, detailId, checkIn, checkOut, guests, days } = params as any;
+
     const { addBooking } = useBooking();
 
     const [target, setTarget] = React.useState<Hotel | Tour | null>(null);
@@ -50,16 +54,16 @@ export default function BookingSummaryScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color="#0a7ea4" />
+            <View style={[styles.container, styles.center, { backgroundColor: themeColors.background }]}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
             </View>
         );
     }
 
     if (!target) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <Text>Details not found</Text>
+            <View style={[styles.container, styles.center, { backgroundColor: themeColors.background }]}>
+                <Text style={{ color: themeColors.text }}>Details not found</Text>
             </View>
         );
     }
@@ -98,26 +102,28 @@ export default function BookingSummaryScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: themeColors.background }]}>
             <Stack.Screen options={{
                 title: 'Confirm Booking',
+                headerStyle: { backgroundColor: themeColors.background },
+                headerTintColor: themeColors.text,
                 headerLeft: () => <BackButton />
             }} />
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Main Product Card */}
-                <View style={styles.card}>
+                <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                     <Image
                         source={typeof target.image === 'string' ? { uri: target.image } : target.image}
                         style={styles.image}
                     />
                     <View style={styles.cardInfo}>
-                        <View style={styles.typeBadge}>
-                            <Text style={styles.typeText}>{type.toUpperCase()}</Text>
+                        <View style={[styles.typeBadge, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                            <Text style={[styles.typeText, { color: colorScheme === 'dark' ? '#bbdefb' : '#0a7ea4' }]}>{type.toUpperCase()}</Text>
                         </View>
-                        <Text style={styles.name}>{target.name}</Text>
+                        <Text style={[styles.name, { color: themeColors.text }]}>{target.name}</Text>
                         <View style={styles.locationRow}>
-                            <IconSymbol name={isHotel ? "mappin.and.ellipse" : "clock.fill"} size={14} color="#666" />
-                            <Text style={styles.locationText}>
+                            <IconSymbol name={isHotel ? "mappin.and.ellipse" : "clock.fill"} size={14} color={themeColors.subtext} />
+                            <Text style={[styles.locationText, { color: themeColors.subtext }]}>
                                 {isHotel ? (target as Hotel).location : (target as Tour).duration}
                             </Text>
                         </View>
@@ -126,45 +132,45 @@ export default function BookingSummaryScreen() {
 
                 {/* Booking Details Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Stay Details</Text>
-                    <View style={styles.detailsGrid}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Stay Details</Text>
+                    <View style={[styles.detailsGrid, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                         <View style={styles.detailItem}>
-                            <View style={styles.iconCircle}>
-                                <IconSymbol name="calendar" size={20} color="#0a7ea4" />
+                            <View style={[styles.iconCircle, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                                <IconSymbol name="calendar" size={20} color={themeColors.primary} />
                             </View>
                             <View>
-                                <Text style={styles.detailLabel}>{isHotel ? 'Check-in' : 'Date'}</Text>
-                                <Text style={styles.detailValue}>{formatDate(checkIn)}</Text>
+                                <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>{isHotel ? 'Check-in' : 'Date'}</Text>
+                                <Text style={[styles.detailValue, { color: themeColors.text }]}>{formatDate(checkIn)}</Text>
                             </View>
                         </View>
                         {isHotel && (
                             <View style={styles.detailItem}>
-                                <View style={styles.iconCircle}>
-                                    <IconSymbol name="calendar" size={20} color="#0a7ea4" />
+                                <View style={[styles.iconCircle, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                                    <IconSymbol name="calendar" size={20} color={themeColors.primary} />
                                 </View>
                                 <View>
-                                    <Text style={styles.detailLabel}>Check-out</Text>
-                                    <Text style={styles.detailValue}>{formatDate(checkOut)}</Text>
+                                    <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Check-out</Text>
+                                    <Text style={[styles.detailValue, { color: themeColors.text }]}>{formatDate(checkOut)}</Text>
                                 </View>
                             </View>
                         )}
                         <View style={styles.detailItem}>
-                            <View style={styles.iconCircle}>
-                                <IconSymbol name="person.2.fill" size={20} color="#0a7ea4" />
+                            <View style={[styles.iconCircle, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                                <IconSymbol name="person.2.fill" size={20} color={themeColors.primary} />
                             </View>
                             <View>
-                                <Text style={styles.detailLabel}>Guests</Text>
-                                <Text style={styles.detailValue}>{guests} People</Text>
+                                <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Guests</Text>
+                                <Text style={[styles.detailValue, { color: themeColors.text }]}>{guests} People</Text>
                             </View>
                         </View>
                         {isHotel && room && (
                             <View style={[styles.detailItem, { width: '100%', marginTop: 12 }]}>
-                                <View style={styles.iconCircle}>
-                                    <IconSymbol name="bed.double.fill" size={20} color="#0a7ea4" />
+                                <View style={[styles.iconCircle, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                                    <IconSymbol name="bed.double.fill" size={20} color={themeColors.primary} />
                                 </View>
                                 <View>
-                                    <Text style={styles.detailLabel}>Room Selected</Text>
-                                    <Text style={styles.detailValue}>{room.roomType} (Floor {room.floor})</Text>
+                                    <Text style={[styles.detailLabel, { color: themeColors.subtext }]}>Room Selected</Text>
+                                    <Text style={[styles.detailValue, { color: themeColors.text }]}>{room.roomType} (Floor {room.floor})</Text>
                                 </View>
                             </View>
                         )}
@@ -173,42 +179,42 @@ export default function BookingSummaryScreen() {
 
                 {/* Price Breakdown Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Price Summary</Text>
-                    <View style={styles.priceContainer}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Price Summary</Text>
+                    <View style={[styles.priceContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                         <View style={styles.row}>
-                            <Text style={styles.label}>
+                            <Text style={[styles.label, { color: themeColors.subtext }]}>
                                 {isHotel ? `${pricePerUnit} x ${days} nights` : `${pricePerUnit} x ${guests} guests`}
                             </Text>
-                            <Text style={styles.value}>${basePrice}</Text>
+                            <Text style={[styles.value, { color: themeColors.text }]}>${basePrice}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.label}>Service Fees</Text>
-                            <Text style={styles.value}>${fees}</Text>
+                            <Text style={[styles.label, { color: themeColors.subtext }]}>Service Fees</Text>
+                            <Text style={[styles.value, { color: themeColors.text }]}>${fees}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.label}>Taxes</Text>
-                            <Text style={styles.value}>${taxes}</Text>
+                            <Text style={[styles.label, { color: themeColors.subtext }]}>Taxes</Text>
+                            <Text style={[styles.value, { color: themeColors.text }]}>${taxes}</Text>
                         </View>
-                        <View style={styles.divider} />
+                        <View style={[styles.divider, { backgroundColor: themeColors.border }]} />
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Total Price</Text>
-                            <Text style={styles.totalValue}>${total}</Text>
+                            <Text style={[styles.totalLabel, { color: themeColors.text }]}>Total Price</Text>
+                            <Text style={[styles.totalValue, { color: themeColors.primary }]}>${total}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* Payment Method Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Payment Method</Text>
-                    <View style={styles.paymentCard}>
-                        <View style={styles.paymentIcon}>
-                            <IconSymbol name="creditcard" size={24} color="#0a7ea4" />
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Payment Method</Text>
+                    <View style={[styles.paymentCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                        <View style={[styles.paymentIcon, { backgroundColor: colorScheme === 'dark' ? '#0d47a1' : '#f0faff' }]}>
+                            <IconSymbol name="creditcard" size={24} color={themeColors.primary} />
                         </View>
                         <View style={styles.paymentInfo}>
-                            <Text style={styles.cardType}>Visa ending in 4242</Text>
-                            <Text style={styles.cardExpiry}>Expires 12/26</Text>
+                            <Text style={[styles.cardType, { color: themeColors.text }]}>Visa ending in 4242</Text>
+                            <Text style={[styles.cardExpiry, { color: themeColors.subtext }]}>Expires 12/26</Text>
                         </View>
-                        <IconSymbol name="chevron.right" size={16} color="#ccc" />
+                        <IconSymbol name="chevron.right" size={16} color={themeColors.border} />
                     </View>
                 </View>
 
@@ -221,7 +227,7 @@ export default function BookingSummaryScreen() {
                 <View style={{ height: 40 }} />
             </ScrollView>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
                 <Button
                     title={isSubmitting ? "Processing..." : `Complete Booking • $${total}`}
                     onPress={handleConfirm}

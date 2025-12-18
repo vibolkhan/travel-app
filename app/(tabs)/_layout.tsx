@@ -1,28 +1,33 @@
+import { HapticTab } from '@/components/HapticTab';
+import { IconSymbol } from '@/components/IconSymbol';
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { useColorScheme } from 'react-native'; // Or your theme hook
-import { HapticTab } from '../../components/HapticTab';
-import { IconSymbol } from '../../components/IconSymbol';
+import { Platform, useColorScheme } from 'react-native';
+import { Colors } from '../../constants/Colors';
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme();
-    const themeColor = '#0a7ea4'; // Hardcoded for now, ideal to use theme
+    const colorScheme = useColorScheme() ?? 'light';
+    const activeColor = Colors[colorScheme].tint;
 
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: themeColor,
+                tabBarActiveTintColor: activeColor,
+                tabBarInactiveTintColor: Colors[colorScheme].icon,
                 headerShown: false,
                 tabBarButton: HapticTab,
-                tabBarStyle: Platform.select({
-                    ios: {
-                        // Use a transparent background on iOS to show the blur effect
-                        position: 'absolute',
-                    },
-                    default: {},
-                }),
+                tabBarStyle: [
+                    Platform.select({
+                        ios: {
+                            // Use a transparent background on iOS to show the blur effect
+                            position: 'absolute',
+                        },
+                        default: {},
+                    }),
+                    {
+                        backgroundColor: Colors[colorScheme].background,
+                        borderTopColor: Colors[colorScheme].border,
+                    }
+                ],
             }}>
             <Tabs.Screen
                 name="explore"

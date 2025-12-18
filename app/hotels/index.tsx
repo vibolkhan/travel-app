@@ -7,13 +7,19 @@ import { HotelCard } from '../../components/cards/HotelCard';
 import { BackButton } from '../../components/ui/BackButton';
 import { Chip } from '../../components/ui/Chip';
 import { SearchBar } from '../../components/ui/SearchBar';
-import { Hotel } from '../../types/models';
-import { fetchHotels, fetchHotelsByDestinationId } from '../../utils/api';
+
+import { Hotel } from '@/types/models';
+import { fetchHotels, fetchHotelsByDestinationId } from '@/utils/api';
+import { useColorScheme } from 'react-native';
+import { Colors } from '../../constants/Colors';
 
 export default function HotelListScreen() {
     const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
 
     const { destinationId, title } = useLocalSearchParams<{ destinationId?: string, title?: string }>();
+
     const [searchQuery, setSearchQuery] = useState('');
     const [hotels, setHotels] = useState<Hotel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,39 +52,45 @@ export default function HotelListScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
                 <Stack.Screen options={{
                     headerShown: true,
                     title: 'Find Hotels',
                     headerShadowVisible: false,
+                    headerStyle: { backgroundColor: themeColors.background },
+                    headerTintColor: themeColors.text,
                     headerLeft: () => <BackButton fallbackHref="/explore" />
                 }} />
-                <ActivityIndicator size="large" color="#0a7ea4" />
+                <ActivityIndicator size="large" color={themeColors.primary} />
             </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
                 <Stack.Screen options={{
                     headerShown: true,
                     title: 'Find Hotels',
                     headerShadowVisible: false,
+                    headerStyle: { backgroundColor: themeColors.background },
+                    headerTintColor: themeColors.text,
                     headerLeft: () => <BackButton fallbackHref="/explore" />
                 }} />
-                <Text style={styles.errorText}>{error}</Text>
+                <Text style={[styles.errorText, { color: themeColors.error }]}>{error}</Text>
                 <Chip label="Retry" selected={true} onPress={loadHotels} />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{
                 headerShown: true,
                 title: displayTitle,
                 headerShadowVisible: false,
+                headerStyle: { backgroundColor: themeColors.background },
+                headerTintColor: themeColors.text,
                 headerLeft: () => <BackButton fallbackHref="/explore" />
             }} />
             <View style={styles.searchContainer}>
@@ -94,7 +106,7 @@ export default function HotelListScreen() {
                     />
                 )}
                 contentContainerStyle={styles.listContent}
-                ListEmptyComponent={<Text style={styles.emptyText}>No hotels found.</Text>}
+                ListEmptyComponent={<Text style={[styles.emptyText, { color: themeColors.subtext }]}>No hotels found.</Text>}
                 refreshing={loading}
                 onRefresh={loadHotels}
             />
