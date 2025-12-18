@@ -2,15 +2,21 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native'
 
 import React from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { RoomCard } from '../../../components/cards/RoomCard'
-import { useAppColors } from '../../../hooks/useAppColors'
+import { BackButton } from '../../../components/ui/BackButton'
+import { EmptyState } from '../../../components/ui/EmptyState'
+import { useThemeColors } from '../../../hooks/useThemeColors'
 import { Room } from '../../../types/models'
 import { fetchRoomsByHotelId } from '../../../utils/api'
 
 export default function RoomSelectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const colors = useAppColors()
+  const colors = useThemeColors()
+  const insets = useSafeAreaInsets()
+
+  const headerTopPadding = (insets.top ?? 0) + 12
 
   const [hotelRooms, setHotelRooms] = React.useState<Room[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -41,8 +47,13 @@ export default function RoomSelectionScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Stack.Screen options={{ title: 'Select Room' }} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <Stack.Screen options={{ title: 'Select Room', headerLeft: () => <BackButton fallbackHref='/hotels' /> }} />
+
+      <View style={[styles.headerRow, { paddingTop: headerTopPadding }]}>
+        <BackButton fallbackHref="/explore" />
+        <Text style={[styles.listTitle, { color: colors.text }]}>List Rooms</Text>
+      </View>
 
       <FlatList
         data={hotelRooms}
@@ -59,11 +70,7 @@ export default function RoomSelectionScreen() {
           />
         )}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Text style={[styles.emptyText, { color: colors.subtext }]}>
-            No rooms available at the moment.
-          </Text>
-        }
+        ListEmptyComponent={<EmptyState title="No rooms available" message="Please check back later." />}
       />
     </View>
   )
@@ -84,5 +91,16 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginTop: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 12,
+  },
+  listTitle: {
+    fontSize: 22,
+    fontWeight: '700',
   },
 })

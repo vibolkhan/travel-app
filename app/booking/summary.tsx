@@ -2,23 +2,28 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native'
 import { Booking, Hotel, Room, Tour } from '../../types/models'
 import { fetchHotelById, fetchRoomsByHotelId, fetchTourById } from '../../utils/api'
+import { formatDate, getDaysDifference } from '../../utils/dates'
 
 import React from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { IconSymbol } from '../../components/IconSymbol'
 import { BackButton } from '../../components/ui/BackButton'
 import { Button } from '../../components/ui/Button'
 import { Colors } from '../../constants/Colors'
+import { useAuth } from "../../context/AuthContext"
 import { useBooking } from '../../context/BookingContext'
-import { formatDate } from '../../utils/dates'
 
 export default function BookingSummaryScreen() {
   const params = useLocalSearchParams()
   const router = useRouter()
   const colorScheme = useColorScheme() ?? 'light'
   const themeColors = Colors[colorScheme]
-  const { type, targetId, detailId, checkIn, checkOut, guests, days } = params as any
+  const { type, targetId, detailId, checkIn, checkOut, guests } = params as any
 
   const { addBooking } = useBooking()
+  const { isAuthenticated } = useAuth()
+
+  const insets = useSafeAreaInsets()
 
   const [target, setTarget] = React.useState<Hotel | Tour | null>(null)
   const [room, setRoom] = React.useState<Room | null>(null)
@@ -77,8 +82,12 @@ export default function BookingSummaryScreen() {
       : (target as Hotel).pricePerNight
     : (target as Tour).price
 
-  const quantity = isHotel ? parseInt(days || '1') : parseInt(guests || '1')
-  const basePrice = (pricePerUnit || 0) * quantity
+  const priceNumber = Number(pricePerUnit) || 0
+
+    // compute nights from check-in/check-out to avoid relying on passed 'days' param
+    const computedDays = Math.max(1, getDaysDifference(String(checkIn || ''), String(checkOut || '')))
+    const quantity = computedDays
+    const basePrice = priceNumber * quantity
 
   const taxes = Math.round(basePrice * 0.1)
   const fees = Math.round(basePrice * 0.05)
@@ -90,27 +99,41 @@ export default function BookingSummaryScreen() {
 
   const handleConfirm = async () => {
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
+
       const booking: Partial<Booking> = {
-        type: type as 'Hotel' | 'Tour',
+        type: type as "Hotel" | "Tour",
         targetId,
         checkIn,
         checkOut: isHotel ? checkOut : checkIn,
         totalPrice: total,
         details: isHotel
-          ? { roomId: detailId, numGuests: parseInt(guests || '1') }
-          : { numGuests: parseInt(guests || '1') },
+          ? { roomId: detailId, numGuests: parseInt(guests || "1") }
+          : { numGuests: parseInt(guests || "1") },
+      };
+
+      await addBooking(booking);
+      router.push("/booking/success");
+    } catch (e: any) {
+      console.error(e);
+
+      const msg = String(e?.message || "");
+      const status = e?.status || e?.response?.status;
+
+      if (msg === "NO_TOKEN" || msg === "UNAUTHORIZED" || status === 401) {
+        router.replace({
+          pathname: "/auth/login",
+          params: { redirectTo: "/booking/summary" },
+        });
+        return;
       }
 
-      await addBooking(booking)
-      router.push('/booking/success')
-    } catch (e: any) {
-      console.error(e)
-      alert(e.message || 'Failed to create booking. Please try again.')
+      alert(e.message || "Failed to create booking. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
+
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
@@ -119,15 +142,17 @@ export default function BookingSummaryScreen() {
           title: 'Confirm Booking',
           headerStyle: { backgroundColor: themeColors.background },
           headerTintColor: themeColors.text,
-          headerLeft: () => <BackButton />,
+          headerLeft: () => <BackButton fallbackHref='/(tabs)/history' />,
         }}
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Main Product Card */}
-        <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-          <Image source={typeof target.image === 'string' ? { uri: target.image } : target.image} style={styles.image} />
-
+        <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, shadowColor: themeColors.border }]}>
+        <Image
+          source={typeof target.image === "string" ? { uri: target.image } : (target.image as any)}
+          style={styles.cardImage}
+        />
           <View style={styles.cardInfo}>
             <View style={[styles.typeBadge, { backgroundColor: badgeBg, borderColor: themeColors.border }]}>
               <Text style={[styles.typeText, { color: badgeText }]}>{String(type).toUpperCase()}</Text>
@@ -208,7 +233,7 @@ export default function BookingSummaryScreen() {
           <View style={[styles.priceContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
             <View style={styles.row}>
               <Text style={[styles.label, { color: themeColors.subtext }]}>
-                {isHotel ? `${pricePerUnit} x ${days} nights` : `${pricePerUnit} x ${guests} guests`}
+                {`${priceNumber} x ${computedDays} nights`}
               </Text>
               <Text style={[styles.value, { color: themeColors.text }]}>${basePrice}</Text>
             </View>
@@ -287,17 +312,22 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    flexDirection: 'row',
+    flexDirection: "row",
+    overflow: "hidden",
     borderRadius: 20,
     padding: 16,
     marginBottom: 24,
     borderWidth: StyleSheet.hairlineWidth,
-
-    shadowColor: '#000',
+    // shadowColor applied inline
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
+  },
+  cardImage: {
+    width: 120,
+    height: "100%",
+    resizeMode: "cover",
   },
   image: {
     width: 80,
@@ -307,6 +337,7 @@ const styles = StyleSheet.create({
   },
   cardInfo: {
     flex: 1,
+    padding: 16,
     justifyContent: 'center',
   },
   typeBadge: {

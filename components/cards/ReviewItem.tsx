@@ -1,8 +1,9 @@
-import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
+
+import React from 'react';
+import { useAppColors } from '../../hooks/useAppColors';
 import { Review } from '../../types/models';
 import { RatingStars } from '../ui/RatingStars';
-import { useAppColors } from '../../hooks/useAppColors';
 
 interface ReviewItemProps {
     review: Review;
@@ -11,19 +12,19 @@ interface ReviewItemProps {
 export function ReviewItem({ review }: ReviewItemProps) {
     const colors = useAppColors();
     return (
-        <View style={[styles.container, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={[styles.container, { backgroundColor: colors.text, borderBottomColor: colors.card }]}>
             <View style={styles.header}>
                 <Image
                     source={typeof review.authorAvatar === 'string' ? { uri: review.authorAvatar } : review.authorAvatar}
                     style={styles.avatar}
                 />
                 <View style={styles.headerText}>
-                    <Text style={[styles.authorName, { color: colors.text }]}>{review.authorName}</Text>
-                    <Text style={[styles.date, { color: colors.subtext }]}>{review.date}</Text>
+                    <Text style={[styles.authorName, { color: colors.card }]}>{review.authorName}</Text>
+                    <Text style={[styles.date, { color: colors.card }]}>{review.date}</Text>
                 </View>
                 <RatingStars rating={review.rating} showText={false} />
             </View>
-            <Text style={[styles.text, { color: colors.text }]}>{review.text}</Text>
+            <Text style={[styles.text, { color: colors.card }]}>{review.text}</Text>
         </View>
     );
 }

@@ -4,6 +4,7 @@ import { FlatList, Image, RefreshControl, StyleSheet, Text, TextInput, Touchable
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components/IconSymbol';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { Colors } from '../../constants/Colors';
 
 // --- Types ---
@@ -115,7 +116,7 @@ export default function MessageScreen() {
         >
             <View style={styles.avatarContainer}>
                 <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
-                {item.isOnline && <View style={styles.onlineBadge} />}
+                {item.isOnline && <View style={[styles.onlineBadge, { backgroundColor: '#4CAF50', borderColor: themeColors.background }]} />}
             </View>
 
             <View style={styles.messageContent}>
@@ -177,14 +178,10 @@ export default function MessageScreen() {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={themeColors.primary} />
                 }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={[styles.emptyText, { color: themeColors.subtext }]}>No messages found</Text>
-                    </View>
-                }
+                ListEmptyComponent={<EmptyState title="No messages found" message="" />}
             />
 
-            <TouchableOpacity style={[styles.fab, { backgroundColor: themeColors.primary }]}>
+            <TouchableOpacity style={[styles.fab, { backgroundColor: themeColors.primary, shadowColor: themeColors.border }]}>
                 <IconSymbol name="square.and.pencil" size={24} color="#fff" />
             </TouchableOpacity>
 
@@ -208,7 +205,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#0a7ea4',
     },
     moreBtn: {
         padding: 5,
@@ -220,16 +216,15 @@ const styles = StyleSheet.create({
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderRadius: 12,
+        borderWidth: 1,
     },
     searchInput: {
         flex: 1,
         marginLeft: 10,
         fontSize: 16,
-        color: '#333',
     },
     listContent: {
         paddingBottom: 100, // Space for FAB
@@ -258,9 +253,7 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         borderRadius: 7,
-        backgroundColor: '#4CAF50',
         borderWidth: 2,
-        borderColor: '#fff',
     },
     messageContent: {
         flex: 1,
@@ -274,13 +267,11 @@ const styles = StyleSheet.create({
     senderName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#333',
         flex: 1,
         marginRight: 10,
     },
     timeText: {
         fontSize: 12,
-        color: '#999',
     },
     messageFooter: {
         flexDirection: 'row',
@@ -298,7 +289,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     unreadBadge: {
-        backgroundColor: '#0a7ea4',
         minWidth: 20,
         height: 20,
         borderRadius: 10,
@@ -318,10 +308,8 @@ const styles = StyleSheet.create({
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: '#0a7ea4',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4,

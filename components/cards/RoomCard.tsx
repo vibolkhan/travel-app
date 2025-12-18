@@ -1,9 +1,10 @@
-import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
+
+import React from 'react';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import { Room } from '../../types/models';
 import { IconSymbol } from '../IconSymbol';
 import { Button } from '../ui/Button';
-import { useAppColors } from '../../hooks/useAppColors';
 
 interface RoomCardProps {
     room: Room;
@@ -11,7 +12,7 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ room, onSelect }: RoomCardProps) {
-    const colors = useAppColors();
+    const colors = useThemeColors();
     const mainImage = room.images?.[0] || 'https://images.unsplash.com/photo-1590490360182-c33d57733427';
 
     return (
@@ -28,7 +29,7 @@ export function RoomCard({ room, onSelect }: RoomCardProps) {
             />
             {!room.isAvailable && (
                 <View style={styles.unavailableBadge}>
-                    <Text style={styles.unavailableText}>UNAVAILABLE</Text>
+                    <Text style={[styles.unavailableText, { color: colors.text }]}>UNAVAILABLE</Text>
                 </View>
             )}
             <View style={styles.content}>
@@ -88,13 +89,11 @@ export function RoomCard({ room, onSelect }: RoomCardProps) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
         borderRadius: 16,
         overflow: 'hidden',
         marginBottom: 20,
         borderWidth: 1,
-        borderColor: '#f0f0f0',
-        shadowColor: '#000',
+        // shadowColor will be applied via inline style
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 10,
@@ -102,7 +101,6 @@ const styles = StyleSheet.create({
     },
     disabledContainer: {
         opacity: 0.8,
-        borderColor: '#e0e0e0',
     },
     image: {
         width: '100%',
@@ -122,7 +120,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     unavailableText: {
-        color: '#fff',
         fontSize: 12,
         fontWeight: 'bold',
         letterSpacing: 1,
@@ -139,16 +136,14 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#1a1a1a',
     },
     roomNumber: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#0a7ea4',
-        backgroundColor: '#f0faff',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 6,
+        borderWidth: 1,
     },
     infoRow: {
         flexDirection: 'row',
@@ -157,19 +152,16 @@ const styles = StyleSheet.create({
     },
     infoText: {
         fontSize: 14,
-        color: '#666',
         marginLeft: 6,
         marginRight: 10,
     },
     dot: {
         width: 4, height: 4,
         borderRadius: 2,
-        backgroundColor: '#ccc',
         marginRight: 10,
     },
     description: {
         fontSize: 14,
-        color: '#777',
         lineHeight: 20,
         marginBottom: 16,
     },
@@ -180,32 +172,28 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     amenityBadge: {
-        backgroundColor: '#f5f5f5',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 20,
+        borderWidth: 1,
     },
     amenityText: {
         fontSize: 12,
-        color: '#555',
     },
     footer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
         paddingTop: 16,
     },
     price: {
         fontSize: 22,
         fontWeight: '800',
-        color: '#0a7ea4',
     },
     perNight: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#888',
     },
     button: {
         paddingVertical: 10,

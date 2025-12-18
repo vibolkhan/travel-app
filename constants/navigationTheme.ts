@@ -26,6 +26,12 @@ export const LightTheme = {
     tabIconSelected: Colors.light.tabIconSelected,
     subtext: Colors.light.subtext,
     error: Colors.light.error,
+    success: Colors.light.success,
+    warning: Colors.light.warning,
+    inputBg: Colors.light.inputBg,
+    inputText: Colors.light.inputText,
+    placeholder: Colors.light.placeholder,
+    overlay: Colors.light.overlay,
   },
 } as any;
 
@@ -47,5 +53,11 @@ export const DarkTheme = {
     tabIconSelected: Colors.dark.tabIconSelected,
     subtext: Colors.dark.subtext,
     error: Colors.dark.error,
+    success: Colors.dark.success,
+    warning: Colors.dark.warning,
+    inputBg: Colors.dark.inputBg,
+    inputText: Colors.dark.inputText,
+    placeholder: Colors.dark.placeholder,
+    overlay: Colors.dark.overlay,
   },
 } as any;

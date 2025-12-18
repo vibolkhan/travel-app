@@ -5,12 +5,12 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { IconSymbol } from '../../components/IconSymbol'
 import { Button } from '../../components/ui/Button'
 import { reviews } from '../../data/reviews'
-import { useAppColors } from '../../hooks/useAppColors'
+import { useThemeColors } from '../../hooks/useThemeColors'
 
 export default function WriteReviewScreen() {
   const { targetId } = useLocalSearchParams<{ targetId: string }>()
   const router = useRouter()
-  const colors = useAppColors()
+  const colors = useThemeColors()
 
   const [rating, setRating] = useState(5)
   const [text, setText] = useState('')

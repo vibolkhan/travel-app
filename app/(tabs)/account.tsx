@@ -1,15 +1,15 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,24 +36,24 @@ export default function AccountScreen() {
       primary: themeColors.primary,
       error: themeColors.error,
 
-      // neutral surfaces (buttons, dropdowns)
-      surface: colorScheme === 'dark' ? '#2c2c2c' : '#f9f9f9',
-      surface2: colorScheme === 'dark' ? '#333' : '#f0f0f0',
+      // dynamic surfaces using theme tokens
+      surface: themeColors.card,
+      surface2: themeColors.background,
 
       // for initials avatar & badge
       avatarBg: themeColors.primary,
       avatarText: '#fff',
 
-      // role badge
-      roleBg: colorScheme === 'dark' ? '#b36b00' : '#ffa31a',
+      // role badge using theme primary/tint
+      roleBg: themeColors.primary,
       roleText: '#fff',
 
-      // "success-ish" soft surface (Add/Logout)
-      softActionBg: colorScheme === 'dark' ? '#1b2601' : '#f4f8e6',
-      softActionBorder: colorScheme === 'dark' ? '#2e3b0e' : '#e0e8c0',
-      softActionText: themeColors.subtext,
+      // "success-ish" / action surfaces
+      softActionBg: themeColors.card,
+      softActionBorder: themeColors.border,
+      softActionText: themeColors.primary,
     }),
-    [themeColors, colorScheme]
+    [themeColors]
   );
 
   const handleEdit = (field: string) => {
@@ -125,13 +125,13 @@ export default function AccountScreen() {
         </View>
 
         {/* Account Settings */}
-        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border }]}>
+        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border, shadowColor: themeColors.border }]}>
           <Text style={[styles.sectionTitle, { color: themed.text }]}>Account Settings</Text>
 
           <View style={styles.row}>
             <Text style={[styles.label, { color: themed.subtext }]}>Change Password</Text>
             <TouchableOpacity
-              style={[styles.smallButton, { backgroundColor: themed.surface, borderColor: themed.border }]}
+              style={[styles.smallButton, { backgroundColor: themed.surface, borderColor: themed.border, shadowColor: themeColors.border }]}
               onPress={() => handleEdit('Password')}
             >
               <Text style={[styles.smallButtonText, { color: themed.subtext }]}>EDIT</Text>
@@ -150,13 +150,13 @@ export default function AccountScreen() {
         </View>
 
         {/* Payment Methods */}
-        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border }]}>
+        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border, shadowColor: themeColors.border }]}>
           <Text style={[styles.sectionTitle, { color: themed.text }]}>Payment Methods</Text>
 
           <View style={styles.row}>
             <Text style={[styles.label, { color: themed.subtext }]}>Visa ending in 1234</Text>
             <TouchableOpacity
-              style={[styles.smallButton, { backgroundColor: themed.surface, borderColor: themed.border }]}
+              style={[styles.smallButton, { backgroundColor: themed.surface, borderColor: themed.border, shadowColor: themeColors.border }]}
               onPress={() => handleEdit('Payment Method')}
             >
               <Text style={[styles.smallButtonText, { color: themed.subtext }]}>EDIT</Text>
@@ -178,7 +178,7 @@ export default function AccountScreen() {
         </View>
 
         {/* Preferences */}
-        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border }]}>
+        <View style={[styles.section, { backgroundColor: themed.card, borderColor: themed.border, shadowColor: themeColors.border }]}>
           <Text style={[styles.sectionTitle, { color: themed.text }]}>Preferences</Text>
 
           <View style={styles.row}>
@@ -203,7 +203,7 @@ export default function AccountScreen() {
         {/* Logout Button */}
         {isAuthenticated && (
           <TouchableOpacity
-            style={[styles.logoutButton, { backgroundColor: themed.softActionBg, borderColor: themed.softActionBorder }]}
+            style={[styles.logoutButton, { backgroundColor: themed.softActionBg, borderColor: themed.softActionBorder, shadowColor: themeColors.border }]}
             onPress={handleLogout}
           >
             <Text style={[styles.logoutButtonText, { color: themed.softActionText }]}>LOGOUT</Text>
@@ -286,8 +286,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
 
-    // keep shadows but they’ll look different in dark mode (that’s OK)
-    shadowColor: '#000',
+    // shadow color applied inline
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -320,7 +319,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     minWidth: 70,
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
@@ -352,7 +350,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,

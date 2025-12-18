@@ -1,5 +1,6 @@
-import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+
+import React from 'react';
 import { useAppColors } from '../../hooks/useAppColors';
 
 interface ChipProps {
@@ -16,12 +17,12 @@ export function Chip({ label, selected, onPress }: ChipProps) {
                 styles.container,
                 selected
                     ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                    : { backgroundColor: colors.card, borderColor: colors.border },
+                    : { backgroundColor: colors.text, borderColor: colors.border },
             ]}
             onPress={onPress}
             activeOpacity={0.7}
         >
-            <Text style={[styles.text, { color: selected ? '#fff' : colors.subtext }]}>
+            <Text style={[styles.text, { color: selected ? colors.card : colors.card }]}>
                 {label}
             </Text>
         </TouchableOpacity>

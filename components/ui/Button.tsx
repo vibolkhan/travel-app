@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 interface ButtonProps {
     title: string;
@@ -11,28 +12,38 @@ interface ButtonProps {
 }
 
 export function Button({ title, onPress, variant = 'primary', style, loading, disabled }: ButtonProps) {
+    const colors = useThemeColors();
     const getBackgroundColor = () => {
-        if (disabled) return '#ccc';
+        if (disabled) return colors.border; // use border color for disabled background
         switch (variant) {
-            case 'primary': return '#0a7ea4';
-            case 'secondary': return '#f0f0f0';
-            case 'outline': return 'transparent';
-            default: return '#0a7ea4';
+            case 'primary':
+                return colors.primary;
+            case 'secondary':
+                return colors.card; // use card/background for secondary
+            case 'outline':
+                return 'transparent';
+            default:
+                return colors.primary;
         }
     };
 
     const getTextColor = () => {
-        if (disabled) return '#666';
+        if (disabled) return colors.subtext;
         switch (variant) {
-            case 'primary': return '#fff';
-            case 'secondary': return '#333';
-            case 'outline': return '#0a7ea4';
-            default: return '#fff';
+            case 'primary':
+                // Ensure contrast on primary background
+                return colors.text;
+            case 'secondary':
+                return colors.text;
+            case 'outline':
+                return colors.primary;
+            default:
+                return colors.text;
         }
     };
 
     const getBorder = () => {
-        if (variant === 'outline') return { borderWidth: 1, borderColor: '#0a7ea4' };
+        if (variant === 'outline') return { borderWidth: 1, borderColor: colors.primary };
         return {};
     };
 

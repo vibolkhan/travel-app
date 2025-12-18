@@ -1,7 +1,8 @@
-import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { IconSymbol } from '../IconSymbol';
+
+import React from 'react';
 import { useAppColors } from '../../hooks/useAppColors';
+import { IconSymbol } from '../IconSymbol';
 
 interface SearchBarProps {
     value: string;
@@ -12,14 +13,14 @@ interface SearchBarProps {
 export function SearchBar({ value, onChangeText, placeholder = 'Search...' }: SearchBarProps) {
     const colors = useAppColors();
     return (
-        <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <IconSymbol name="magnifyingglass" size={20} color={colors.subtext} style={styles.icon} />
+        <View style={[styles.container, { backgroundColor: colors.text, borderColor: colors.card }]}>
+            <IconSymbol name="magnifyingglass" size={20} color={colors.card} style={styles.icon} />
             <TextInput
-                style={[styles.input, { color: colors.text }]}
+                style={[styles.input, { color: colors.card }]}
                 value={value}
                 onChangeText={onChangeText}
                 placeholder={placeholder}
-                placeholderTextColor={colors.subtext}
+                placeholderTextColor={colors.card}
             />
         </View>
     );

@@ -61,6 +61,8 @@ export default function BookingDatesScreen() {
   const [guests, setGuests] = useState(2)
 
   const [openPicker, setOpenPicker] = useState<null | 'checkin' | 'checkout'>(null)
+  const [androidStep, setAndroidStep] = useState<null | 'date' | 'time'>(null)
+  const [androidTempDate, setAndroidTempDate] = useState<Date | null>(null)
 
   const checkInText = useMemo(() => formatDisplayDateTime(checkInDate), [checkInDate])
   const checkOutText = useMemo(() => formatDisplayDateTime(checkOutDate), [checkOutDate])
@@ -90,12 +92,45 @@ export default function BookingDatesScreen() {
   }
 
   const onNativeChange = (event: DateTimePickerEvent, selected?: Date) => {
-    // Android closes on select/dismiss. iOS stays open until Done.
-    if (Platform.OS !== 'ios') setOpenPicker(null)
+    // iOS: stays open until Done. Keep existing behavior only for iOS.
+    if (Platform.OS !== 'ios') return
     if (event.type === 'dismissed' || !selected) return
 
     if (openPicker === 'checkin') applyCheckIn(selected)
     if (openPicker === 'checkout') applyCheckOut(selected)
+  }
+
+  // Android two-step picker handler: first date, then time
+  const onAndroidChange = (event: DateTimePickerEvent, selected?: Date) => {
+    if (event.type === 'dismissed') {
+      setOpenPicker(null)
+      setAndroidStep(null)
+      setAndroidTempDate(null)
+      return
+    }
+
+    if (!selected) return
+
+    if (androidStep === 'date') {
+      // store date part and proceed to time picker
+      setAndroidTempDate(selected)
+      setAndroidStep('time')
+      return
+    }
+
+    if (androidStep === 'time') {
+      // combine date and time
+      const datePart = androidTempDate || (openPicker === 'checkin' ? checkInDate : checkOutDate)
+      const combined = new Date(datePart)
+      combined.setHours(selected.getHours(), selected.getMinutes(), 0, 0)
+
+      if (openPicker === 'checkin') applyCheckIn(combined)
+      if (openPicker === 'checkout') applyCheckOut(combined)
+
+      setOpenPicker(null)
+      setAndroidStep(null)
+      setAndroidTempDate(null)
+    }
   }
 
   const handleContinue = () => {
@@ -156,7 +191,10 @@ export default function BookingDatesScreen() {
               </View>
             ) : (
               <Pressable
-                onPress={() => setOpenPicker('checkin')}
+                onPress={() => {
+                  if (Platform.OS === 'android') setAndroidStep('date')
+                  setOpenPicker('checkin')
+                }}
                 style={[styles.inputBox, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}
               >
                 <IconSymbol name="calendar" size={20} color={themeColors.subtext} />
@@ -193,7 +231,10 @@ export default function BookingDatesScreen() {
               </View>
             ) : (
               <Pressable
-                onPress={() => setOpenPicker('checkout')}
+                onPress={() => {
+                  if (Platform.OS === 'android') setAndroidStep('date')
+                  setOpenPicker('checkout')
+                }}
                 style={[styles.inputBox, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}
               >
                 <IconSymbol name="calendar" size={20} color={themeColors.subtext} />
@@ -240,15 +281,28 @@ export default function BookingDatesScreen() {
         <Button title="Continue" onPress={handleContinue} />
       </View>
 
-      {/* Native Picker (Android/iOS only) */}
-      {Platform.OS !== 'web' && openPicker && (
+      {/* Native Picker:
+          - iOS: spinner datetime picker
+          - Android: two-step picker (date -> time)
+      */}
+      {Platform.OS === 'ios' && openPicker && (
         <DateTimePicker
           value={openPicker === 'checkin' ? checkInDate : checkOutDate}
           mode="datetime"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={'spinner'}
           minimumDate={openPicker === 'checkout' ? minCheckOut : minCheckIn}
           onChange={onNativeChange}
           themeVariant={colorScheme === 'dark' ? 'dark' : 'light'}
+        />
+      )}
+
+      {Platform.OS === 'android' && openPicker && androidStep && (
+        <DateTimePicker
+          value={androidStep === 'date' ? (openPicker === 'checkin' ? checkInDate : checkOutDate) : (androidTempDate || new Date())}
+          mode={androidStep}
+          display={'default'}
+          minimumDate={androidStep === 'date' ? (openPicker === 'checkout' ? minCheckOut : minCheckIn) : undefined}
+          onChange={onAndroidChange}
         />
       )}
 

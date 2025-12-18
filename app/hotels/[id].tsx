@@ -1,25 +1,31 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { IconSymbol } from '../../components/IconSymbol'
 import { BackButton } from '../../components/ui/BackButton'
 import { Button } from '../../components/ui/Button'
 import { RatingStars } from '../../components/ui/RatingStars'
 import { useFavorites } from '../../context/FavoritesContext'
-import { rooms } from '../../data/rooms'
-import { useAppColors } from '../../hooks/useAppColors'
+import { useThemeColors } from '../../hooks/useThemeColors'
 import { Hotel } from '../../types/models'
 import { fetchHotelById } from '../../utils/api'
+
+// rooms import removed - not used in this screen
+
+
+
 
 export default function HotelDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const colors = useAppColors()
+  const colors = useThemeColors()
 
   const [hotel, setHotel] = useState<Hotel | null>(null)
   const [loading, setLoading] = useState(true)
   const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     loadHotel()
@@ -38,7 +44,7 @@ export default function HotelDetailScreen() {
     }
   }
 
-  const hotelRooms = rooms.filter((r) => r.hotelId === id)
+  // const hotelRooms = rooms.filter((r) => r.hotelId === id) // unused
 
   if (loading) {
     return (
@@ -58,7 +64,8 @@ export default function HotelDetailScreen() {
 
   const isFav = isFavorite(hotel.id, 'hotel')
   const toggleFavorite = () => {
-    isFav ? removeFavorite(hotel.id, 'hotel') : addFavorite(hotel.id, 'hotel')
+    if (isFav) removeFavorite(hotel.id, 'hotel')
+    else addFavorite(hotel.id, 'hotel')
   }
 
   return (
@@ -66,7 +73,7 @@ export default function HotelDetailScreen() {
       <Stack.Screen
         options={{
           title: hotel.name,
-          headerLeft: () => <BackButton />,
+          headerLeft: () => <BackButton fallbackHref="/hotels" />,
           headerRight: () => (
             <IconSymbol
               name={isFav ? 'heart.fill' : 'heart'}
@@ -79,7 +86,12 @@ export default function HotelDetailScreen() {
         }}
       />
 
-      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Overlay back button in case header isn't visible on some platforms */}
+      <View style={{ position: 'absolute', top: insets.top + 8, left: 8, zIndex: 20 }}>
+        <BackButton fallbackHref="/hotels" />
+      </View>
+
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}> 
         <Image
           source={typeof hotel.image === 'string' ? { uri: hotel.image } : hotel.image}
           style={styles.image}
@@ -106,7 +118,7 @@ export default function HotelDetailScreen() {
                   { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
               >
-                <Text style={[styles.amenityText, { color: colors.subtext }]}>{amenity}</Text>
+                <Text style={[styles.amenityText, { color: colors.text }]}>{amenity}</Text>
               </View>
             ))}
           </View>

@@ -4,14 +4,15 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 
 import { ReviewItem } from '../../components/cards/ReviewItem'
 import { Button } from '../../components/ui/Button'
-import { useAppColors } from '../../hooks/useAppColors'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { useThemeColors } from '../../hooks/useThemeColors'
 import { Review } from '../../types/models'
 import { fetchReviews } from '../../utils/api'
 
 export default function ReviewsScreen() {
   const { targetId } = useLocalSearchParams<{ targetId: string }>()
   const router = useRouter()
-  const colors = useAppColors()
+  const colors = useThemeColors()
 
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,11 +66,7 @@ export default function ReviewsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ReviewItem review={item} />}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <Text style={[styles.emptyText, { color: colors.subtext }]}>
-              No reviews yet. Be the first!
-            </Text>
-          }
+          ListEmptyComponent={<EmptyState title="No reviews yet" message="Be the first to write one!" />}
         />
       )}
     </View>

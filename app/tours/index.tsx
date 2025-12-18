@@ -1,14 +1,16 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { fetchTours, fetchToursByDestinationId } from '../../utils/api';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { TourCard } from '../../components/cards/TourCard';
 import { BackButton } from '../../components/ui/BackButton';
 import { Chip } from '../../components/ui/Chip';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { SearchBar } from '../../components/ui/SearchBar';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import { Tour } from '../../types/models';
-import { fetchTours, fetchToursByDestinationId } from '../../utils/api';
 
 export default function TourListScreen() {
     const router = useRouter();
@@ -16,6 +18,7 @@ export default function TourListScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [tours, setTours] = useState<Tour[]>([]);
     const [loading, setLoading] = useState(true);
+    const colors = useThemeColors();
     const [error, setError] = useState<string | null>(null);
 
     const displayTitle = title || (destinationId ? 'Local Tours' : 'Find Adventure');
@@ -45,41 +48,53 @@ export default function TourListScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: colors.background }]} edges={['top']}>
                 <Stack.Screen options={{
                     headerShown: true,
                     title: 'Find Adventure',
                     headerShadowVisible: false,
+                    headerStyle: { backgroundColor: colors.background },
+                    headerTintColor: colors.text,
                     headerLeft: () => <BackButton fallbackHref="/explore" />
                 }} />
-                <ActivityIndicator size="large" color="#0a7ea4" />
+                <ActivityIndicator size="large" color={colors.primary} />
             </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
+            <SafeAreaView style={[styles.container, styles.center, { backgroundColor: colors.background }]} edges={['top']}>
                 <Stack.Screen options={{
                     headerShown: true,
                     title: 'Find Adventure',
                     headerShadowVisible: false,
+                    headerStyle: { backgroundColor: colors.background },
+                    headerTintColor: colors.text,
                     headerLeft: () => <BackButton fallbackHref="/explore" />
                 }} />
-                <Text style={styles.errorText}>{error}</Text>
+                <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
                 <Chip label="Retry" selected={true} onPress={loadTours} />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
             <Stack.Screen options={{
                 headerShown: true,
                 title: displayTitle,
                 headerShadowVisible: false,
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.text,
                 headerLeft: () => <BackButton fallbackHref="/explore" />
             }} />
+            {/* In-page header above search */}
+            <View style={styles.headerRow}>
+                <BackButton fallbackHref="/explore" />
+                <Text style={[styles.title, { color: colors.text }]}>List Tours</Text>
+            </View>
+
             <View style={styles.searchContainer}>
                 <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search tours..." />
             </View>
@@ -93,7 +108,7 @@ export default function TourListScreen() {
                     />
                 )}
                 contentContainerStyle={styles.listContent}
-                ListEmptyComponent={<Text style={styles.emptyText}>No tours found.</Text>}
+                ListEmptyComponent={<EmptyState title="No tours found" message="" />}
                 refreshing={loading}
                 onRefresh={loadTours}
             />
@@ -104,7 +119,6 @@ export default function TourListScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     header: {
         paddingHorizontal: 20,
@@ -114,7 +128,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#0a7ea4',
     },
     searchContainer: {
         paddingHorizontal: 20,
@@ -127,7 +140,6 @@ const styles = StyleSheet.create({
     emptyText: {
         textAlign: 'center',
         marginTop: 20,
-        color: '#666',
     },
     center: {
         justifyContent: 'center',
@@ -135,7 +147,18 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: 'red',
         marginBottom: 20,
-    }
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        gap: 12,
+        marginTop: 8,
+        marginBottom: 12,
+    },
+    listTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+    },
 });

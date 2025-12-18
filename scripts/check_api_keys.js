@@ -1,6 +1,6 @@
 const https = require('https');
 
-https.get('http://localhost:4000/api/v1/destinations', (resp) => {
+https.get('https://travel-api-dn8n.onrender.com/api/v1/destinations', (resp) => {
     let data = '';
 
     resp.on('data', (chunk) => {

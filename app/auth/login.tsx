@@ -1,6 +1,7 @@
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View, useColorScheme } from 'react-native';
+
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Colors } from '../../constants/Colors';
@@ -100,7 +101,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     keyboardView: {
         flex: 1,
@@ -116,12 +116,10 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#0a7ea4',
         marginBottom: 8,
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
     },
     form: {
         gap: 20,
@@ -132,15 +130,12 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#333',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
         padding: 12,
         fontSize: 16,
-        backgroundColor: '#f9f9f9',
     },
     loginButton: {
         marginTop: 10,
@@ -150,7 +145,6 @@ const styles = StyleSheet.create({
     },
     skipText: {
         textAlign: 'center',
-        color: '#0a7ea4',
         fontWeight: '600',
         marginTop: 16,
     },

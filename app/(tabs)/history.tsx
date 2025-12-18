@@ -2,11 +2,11 @@ import { Stack, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
+import { useBooking } from '@/context/BookingContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Chip } from '../../components/ui/Chip';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Colors } from '../../constants/Colors';
-import { useBooking } from '../../context/BookingContext';
 import { Booking } from '../../types/models';
 import { formatDate } from '../../utils/dates';
 

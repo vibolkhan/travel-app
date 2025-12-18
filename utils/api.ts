@@ -1,5 +1,3 @@
-import { destinations as staticDestinations } from '../data/destinations';
-import { tours as staticTours } from '../data/tours';
 import {
     ApiBooking,
     ApiDestination,
@@ -15,9 +13,12 @@ import {
     Room,
     Tour
 } from '../types/models';
+
+import { destinations as staticDestinations } from '../data/destinations';
+import { tours as staticTours } from '../data/tours';
 import { formatDate } from './dates';
 
-const API_BASE_URL = 'http://localhost:4000/api/v1';
+const API_BASE_URL = 'https://travel-api-dn8n.onrender.com/api/v1';
 
 // Token storage
 let authToken: string | null = null;
@@ -387,23 +388,31 @@ export const fetchMyBookings = async (): Promise<Booking[]> => {
     }
 };
 
-export const createBooking = async (bookingData: Partial<ApiBooking>): Promise<Booking> => {
-    try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/bookings`, {
-            method: 'POST',
-            body: JSON.stringify(bookingData),
-        });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `API Error: ${response.status}`);
-        }
-        const json = await response.json();
-        return mapBookingApiToModel(json.data || json);
-    } catch (error) {
-        console.error('Failed to create booking:', error);
-        throw error;
-    }
-};
+export async function createBooking(data: any) {
+  const token = await getAuthToken();
+  if (!token) {
+    const err: any = new Error("NO_TOKEN");
+    err.status = 401;
+    throw err;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (res.status === 401) {
+    const err: any = new Error("UNAUTHORIZED");
+    err.status = 401;
+    throw err;
+  }
+
+  return await res.json();
+}
 
 export const cancelBookingApi = async (id: string): Promise<boolean> => {
     try {

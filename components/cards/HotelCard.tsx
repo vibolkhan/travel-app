@@ -18,26 +18,26 @@ export function HotelCard({ hotel, onPress }: HotelCardProps) {
   const shadowStyle =
     scheme === 'dark'
       ? {
-          shadowColor: '#000',
-          shadowOpacity: 0.35,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: 2,
-        }
+        shadowColor: colors.border,
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
+      }
       : {
-          shadowColor: '#000',
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 3,
-        }
+        shadowColor: colors.border,
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
+      }
 
-  return (
+    return (
     <TouchableOpacity
       style={[
         styles.container,
         shadowStyle,
-        { backgroundColor: colors.card, borderColor: colors.border },
+        { backgroundColor: colors.text, borderColor: colors.card },
       ]}
       onPress={onPress}
       activeOpacity={0.9}
@@ -49,15 +49,15 @@ export function HotelCard({ hotel, onPress }: HotelCardProps) {
 
       <View style={styles.content}>
         <View style={styles.row}>
-          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.name, { color: colors.card }]} numberOfLines={1}>
             {hotel.name}
           </Text>
           <RatingStars rating={hotel.rating} />
         </View>
 
         <View style={styles.locationRow}>
-          <IconSymbol name="mappin.and.ellipse" size={14} color={colors.subtext} />
-          <Text style={[styles.location, { color: colors.subtext }]} numberOfLines={1}>
+          <IconSymbol name="mappin.and.ellipse" size={14} color={colors.card} />
+          <Text style={[styles.location, { color: colors.card }]} numberOfLines={1}>
             {hotel.location}
           </Text>
         </View>
@@ -68,8 +68,8 @@ export function HotelCard({ hotel, onPress }: HotelCardProps) {
             <Text style={[styles.perNight, { color: colors.subtext }]}>/night</Text>
           </Text>
 
-          <View style={[styles.badge, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.badgeText, { color: colors.subtext }]}>{hotel.reviews} reviews</Text>
+          <View style={[styles.badge, { backgroundColor: colors.card, borderColor: colors.card }]}>
+            <Text style={[styles.badgeText, { color: colors.text }]}>{hotel.reviews} reviews</Text>
           </View>
         </View>
       </View>

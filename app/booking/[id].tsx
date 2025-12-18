@@ -1,14 +1,14 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-    useColorScheme,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
 } from 'react-native';
 
 import React from 'react';
@@ -34,7 +34,7 @@ export default function BookingDetailScreen() {
     text: themeColors.text,
     subtext: themeColors.subtext,
     border: themeColors.border,
-    card: themeColors.card,
+    card: colorScheme === 'dark' ? '#000' : themeColors.card,
     primary: themeColors.primary,
     error: themeColors.error,
 
@@ -121,7 +121,7 @@ export default function BookingDetailScreen() {
         }}
       />
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={[styles.content, { marginTop: Platform.OS === 'web' ? 0 : 12 }]}>
         <Image
           source={typeof booking.image === 'string' ? { uri: booking.image } : booking.image}
           style={[styles.image, { backgroundColor: themed.imageBg }]}
