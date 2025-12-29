@@ -39,6 +39,8 @@ const MAPPING = {
     'arrow.up.circle.fill': 'arrow-circle-up',
     'lock.fill': 'lock',
     'layers': 'layers',
+    'plus': 'add',
+    'minus': 'remove',
 } as const; // using as const to infer keys better if needed, but for now we rely on the type below
 
 export type IconSymbolName = keyof typeof MAPPING;

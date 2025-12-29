@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components/IconSymbol';
+import { useAppColors } from '../../hooks/useAppColors';
 
 // --- Types ---
 type Message = {
@@ -28,6 +29,7 @@ export default function ChatDetailScreen() {
     const [messages, setMessages] = useState<Message[]>(MOCK_HISTORY['default']);
     const [inputText, setInputText] = useState('');
     const flatListRef = useRef<FlatList>(null);
+    const colors = useAppColors();
 
     const handleSend = () => {
         if (!inputText.trim()) return;
@@ -69,11 +71,11 @@ export default function ChatDetailScreen() {
                     style={styles.messageAvatar}
                 />
             )}
-            <View style={[styles.messageBubble, item.isSender ? styles.senderBubble : styles.receiverBubble]}>
-                <Text style={[styles.messageText, item.isSender ? styles.senderText : styles.receiverText]}>
+            <View style={[styles.messageBubble, item.isSender ? [styles.senderBubble, { backgroundColor: colors.primary }] : [styles.receiverBubble, { backgroundColor: colors.card }]]}>
+                <Text style={[styles.messageText, { color: item.isSender ? '#fff' : colors.text }]}>
                     {item.text}
                 </Text>
-                <Text style={[styles.messageTime, item.isSender ? styles.senderTime : styles.receiverTime]}>
+                <Text style={[styles.messageTime, { color: item.isSender ? 'rgba(255, 255, 255, 0.7)' : colors.subtext }]}>
                     {item.time}
                 </Text>
             </View>
@@ -85,9 +87,9 @@ export default function ChatDetailScreen() {
             <Stack.Screen options={{ headerShown: false }} />
 
             {/* Custom Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.background }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <IconSymbol name="chevron.left" size={28} color="#ffa31a" />
+                    <IconSymbol name="chevron.left" size={28} color={colors.primary} />
                 </TouchableOpacity>
 
                 <View style={styles.headerInfo}>
@@ -95,17 +97,17 @@ export default function ChatDetailScreen() {
                         source={{ uri: avatar || 'https://randomuser.me/api/portraits/lego/1.jpg' }}
                         style={styles.headerAvatar}
                     />
-                    <Text style={styles.headerName}>{name || 'Chat'}</Text>
+                    <Text style={[styles.headerName, { color: colors.text }]}>{name || 'Chat'}</Text>
                 </View>
 
                 <View style={styles.headerActions}>
                     <TouchableOpacity style={styles.actionButton}>
-                        <IconSymbol name="phone.fill" size={24} color="#ffa31a" />
+                        <IconSymbol name="phone.fill" size={24} color={colors.primary} />
                     </TouchableOpacity>
                 </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <FlatList
                 ref={flatListRef}
@@ -119,21 +121,22 @@ export default function ChatDetailScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
             >
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
                     <TouchableOpacity style={styles.attachButton}>
-                        <IconSymbol name="plus.circle" size={24} color="#ffa31a" />
+                        <IconSymbol name="plus.circle" size={24} color={colors.primary} />
                     </TouchableOpacity>
 
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
                         placeholder="Type a message..."
+                        placeholderTextColor={colors.subtext}
                         value={inputText}
                         onChangeText={setInputText}
                         multiline
                     />
 
                     <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                        <IconSymbol name="arrow.up.circle.fill" size={32} color="#ffa31a" />
+                        <IconSymbol name="arrow.up.circle.fill" size={32} color={colors.primary} />
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -145,14 +148,12 @@ export default function ChatDetailScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#fff',
     },
     backButton: {
         padding: 4,
@@ -211,40 +212,24 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     senderBubble: {
-        backgroundColor: '#ffa31a',
         borderBottomRightRadius: 4,
     },
     receiverBubble: {
-        backgroundColor: '#f0f0f0',
         borderBottomLeftRadius: 4,
     },
     messageText: {
         fontSize: 16,
         marginBottom: 4,
     },
-    senderText: {
-        color: '#fff',
-    },
-    receiverText: {
-        color: '#333',
-    },
     messageTime: {
         fontSize: 10,
         alignSelf: 'flex-end',
-    },
-    senderTime: {
-        color: 'rgba(255, 255, 255, 0.7)',
-    },
-    receiverTime: {
-        color: '#999',
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,
         borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-        backgroundColor: '#fff',
     },
     attachButton: {
         padding: 8,
@@ -253,7 +238,6 @@ const styles = StyleSheet.create({
         flex: 1,
         minHeight: 40,
         maxHeight: 100,
-        backgroundColor: '#f9f9f9',
         borderRadius: 20,
         paddingHorizontal: 16,
         paddingVertical: 10,

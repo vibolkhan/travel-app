@@ -1,8 +1,11 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, Image, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '../../components/IconSymbol';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { Colors } from '../../constants/Colors';
 
 // --- Types ---
 type Message = {
@@ -70,6 +73,9 @@ const MOCK_MESSAGES: Message[] = [
 ];
 
 export default function MessageScreen() {
+    const colorScheme = useColorScheme() ?? 'light';
+    const themeColors = Colors[colorScheme];
+
     const [searchQuery, setSearchQuery] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [messages, setMessages] = useState(MOCK_MESSAGES);
@@ -104,24 +110,34 @@ export default function MessageScreen() {
     };
 
     const renderItem = ({ item }: { item: Message }) => (
-        <TouchableOpacity style={styles.messageItem} onPress={() => handlePressMessage(item.id)}>
+        <TouchableOpacity
+            style={[styles.messageItem, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}
+            onPress={() => handlePressMessage(item.id)}
+        >
             <View style={styles.avatarContainer}>
                 <Image source={{ uri: item.sender.avatar }} style={styles.avatar} />
-                {item.isOnline && <View style={styles.onlineBadge} />}
+                {item.isOnline && <View style={[styles.onlineBadge, { backgroundColor: '#4CAF50', borderColor: themeColors.background }]} />}
             </View>
 
             <View style={styles.messageContent}>
                 <View style={styles.messageHeader}>
-                    <Text style={styles.senderName} numberOfLines={1}>{item.sender.name}</Text>
-                    <Text style={styles.timeText}>{item.time}</Text>
+                    <Text style={[styles.senderName, { color: themeColors.text }]} numberOfLines={1}>{item.sender.name}</Text>
+                    <Text style={[styles.timeText, { color: themeColors.subtext }]}>{item.time}</Text>
                 </View>
 
                 <View style={styles.messageFooter}>
-                    <Text style={[styles.messagePreview, item.unreadCount > 0 && styles.unreadPreview]} numberOfLines={1}>
+                    <Text
+                        style={[
+                            styles.messagePreview,
+                            { color: themeColors.subtext },
+                            item.unreadCount > 0 && [styles.unreadPreview, { color: themeColors.text }],
+                        ]}
+                        numberOfLines={1}
+                    >
                         {item.content}
                     </Text>
                     {item.unreadCount > 0 && (
-                        <View style={styles.unreadBadge}>
+                        <View style={[styles.unreadBadge, { backgroundColor: themeColors.primary }]}>
                             <Text style={styles.unreadText}>{item.unreadCount}</Text>
                         </View>
                     )}
@@ -131,23 +147,23 @@ export default function MessageScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <View style={styles.header}>
-                <Text style={styles.title}>Inbox</Text>
+                <Text style={[styles.title, { color: themeColors.text }]}>Inbox</Text>
                 <TouchableOpacity style={styles.moreBtn}>
-                    <IconSymbol name="ellipsis.circle" size={24} color="#ffa31a" />
+                    <IconSymbol name="ellipsis.circle" size={24} color={themeColors.primary} />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.searchContainer}>
-                <View style={styles.searchBar}>
-                    <IconSymbol name="magnifyingglass" size={18} color="#999" />
+                <View style={[styles.searchBar, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                    <IconSymbol name="magnifyingglass" size={18} color={themeColors.subtext} />
                     <TextInput
-                        style={styles.searchInput}
+                        style={[styles.searchInput, { color: themeColors.text }]}
                         placeholder="Search messages..."
-                        placeholderTextColor="#999"
+                        placeholderTextColor={themeColors.subtext}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
@@ -160,16 +176,12 @@ export default function MessageScreen() {
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffa31a" />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={themeColors.primary} />
                 }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No messages found</Text>
-                    </View>
-                }
+                ListEmptyComponent={<EmptyState title="No messages found" message="" />}
             />
 
-            <TouchableOpacity style={styles.fab}>
+            <TouchableOpacity style={[styles.fab, { backgroundColor: themeColors.primary, shadowColor: themeColors.border }]}>
                 <IconSymbol name="square.and.pencil" size={24} color="#fff" />
             </TouchableOpacity>
 
@@ -193,7 +205,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#0a7ea4',
     },
     moreBtn: {
         padding: 5,
@@ -205,16 +216,15 @@ const styles = StyleSheet.create({
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderRadius: 12,
+        borderWidth: 1,
     },
     searchInput: {
         flex: 1,
         marginLeft: 10,
         fontSize: 16,
-        color: '#333',
     },
     listContent: {
         paddingBottom: 100, // Space for FAB
@@ -243,9 +253,7 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         borderRadius: 7,
-        backgroundColor: '#4CAF50',
         borderWidth: 2,
-        borderColor: '#fff',
     },
     messageContent: {
         flex: 1,
@@ -259,13 +267,11 @@ const styles = StyleSheet.create({
     senderName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#333',
         flex: 1,
         marginRight: 10,
     },
     timeText: {
         fontSize: 12,
-        color: '#999',
     },
     messageFooter: {
         flexDirection: 'row',
@@ -283,7 +289,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     unreadBadge: {
-        backgroundColor: '#0a7ea4',
         minWidth: 20,
         height: 20,
         borderRadius: 10,
@@ -303,10 +308,8 @@ const styles = StyleSheet.create({
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: '#0a7ea4',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4,

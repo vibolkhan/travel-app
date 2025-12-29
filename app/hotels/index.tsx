@@ -1,142 +1,143 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { fetchHotels, fetchHotelsByDestinationId } from '@/utils/api'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, FlatList, StyleSheet, Text, View, useColorScheme } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { HotelCard } from '../../components/cards/HotelCard';
-import { BackButton } from '../../components/ui/BackButton';
-import { Chip } from '../../components/ui/Chip';
-import { SearchBar } from '../../components/ui/SearchBar';
-import { Hotel } from '../../types/models';
-import { fetchHotels, fetchHotelsByDestinationId } from '../../utils/api';
+import { Hotel } from '@/types/models'
+import { HotelCard } from '../../components/cards/HotelCard'
+import { BackButton } from '../../components/ui/BackButton'
+import { Chip } from '../../components/ui/Chip'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { SearchBar } from '../../components/ui/SearchBar'
+import { Colors } from '../../constants/Colors'
 
 export default function HotelListScreen() {
-    const router = useRouter();
+  const router = useRouter()
+  const colorScheme = useColorScheme() ?? 'light'
+  const themeColors = Colors[colorScheme]
 
-    const { destinationId, title } = useLocalSearchParams<{ destinationId?: string, title?: string }>();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [hotels, setHotels] = useState<Hotel[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets()
 
-    const displayTitle = title || (destinationId ? 'Local Hotels' : 'Find Hotels');
+  const { destinationId, title } = useLocalSearchParams<{ destinationId?: string; title?: string }>()
 
-    useEffect(() => {
-        loadHotels();
-    }, [destinationId]);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [hotels, setHotels] = useState<Hotel[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    const loadHotels = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = destinationId
-                ? await fetchHotelsByDestinationId(destinationId)
-                : await fetchHotels();
-            setHotels(data);
-        } catch (err) {
-            setError('Failed to load hotels. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const displayTitle = title || (destinationId ? 'Local Hotels' : 'Find Hotels')
 
-    const filteredHotels = hotels.filter((h) =>
-        h.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  useEffect(() => {
+    loadHotels()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinationId])
 
-    if (loading) {
-        return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
-                <Stack.Screen options={{
-                    headerShown: true,
-                    title: 'Find Hotels',
-                    headerShadowVisible: false,
-                    headerLeft: () => <BackButton fallbackHref="/explore" />
-                }} />
-                <ActivityIndicator size="large" color="#0a7ea4" />
-            </SafeAreaView>
-        );
+  const loadHotels = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = destinationId ? await fetchHotelsByDestinationId(destinationId) : await fetchHotels()
+      setHotels(data)
+    } catch (err) {
+      setError('Failed to load hotels. Please try again.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    if (error) {
-        return (
-            <SafeAreaView style={[styles.container, styles.center]} edges={['top']}>
-                <Stack.Screen options={{
-                    headerShown: true,
-                    title: 'Find Hotels',
-                    headerShadowVisible: false,
-                    headerLeft: () => <BackButton fallbackHref="/explore" />
-                }} />
-                <Text style={styles.errorText}>{error}</Text>
-                <Chip label="Retry" selected={true} onPress={loadHotels} />
-            </SafeAreaView>
-        );
-    }
+  const filteredHotels = hotels.filter((h) => h.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
+  const headerOptions = {
+    headerShown: true,
+    title: displayTitle,
+    headerShadowVisible: false,
+    headerStyle: { backgroundColor: themeColors.background },
+    headerTintColor: themeColors.text,
+    headerLeft: () => <BackButton fallbackHref="/explore" />,
+  } as const
+
+  if (loading) {
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
-            <Stack.Screen options={{
-                headerShown: true,
-                title: displayTitle,
-                headerShadowVisible: false,
-                headerLeft: () => <BackButton fallbackHref="/explore" />
-            }} />
-            <View style={styles.searchContainer}>
-                <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search hotels..." />
-            </View>
-            <FlatList
-                data={filteredHotels}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <HotelCard
-                        hotel={item}
-                        onPress={() => router.push(`/hotels/${item.id}`)}
-                    />
-                )}
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={<Text style={styles.emptyText}>No hotels found.</Text>}
-                refreshing={loading}
-                onRefresh={loadHotels}
-            />
-        </SafeAreaView>
-    );
+      <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
+        <Stack.Screen options={{ ...headerOptions, title: 'Find Hotels' }} />
+        <ActivityIndicator size="large" color={themeColors.primary} />
+      </SafeAreaView>
+    )
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]} edges={['top']}>
+        <Stack.Screen options={{ ...headerOptions, title: 'Find Hotels' }} />
+        <Text style={[styles.errorText, { color: themeColors.error || themeColors.primary }]}>{error}</Text>
+        <Chip label="Retry" selected={true} onPress={loadHotels} />
+      </SafeAreaView>
+    )
+  }
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]} edges={['top']}>
+      <Stack.Screen options={headerOptions} />
+          {/* In-page header above search */}
+          <View style={styles.headerRow}>
+            <BackButton fallbackHref="/explore" />
+            <Text style={[styles.listTitle, { color: themeColors.text }]}>List Hotels</Text>
+          </View>
+
+          <View style={styles.searchContainer}>
+            <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search hotels..." />
+          </View>
+
+      <FlatList
+        data={filteredHotels}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <HotelCard hotel={item} onPress={() => router.push(`/hotels/${item.id}`)} />}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={<EmptyState title="No hotels found" message="" />}
+        refreshing={loading}
+        onRefresh={loadHotels}
+      />
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    header: {
-        paddingHorizontal: 20,
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#0a7ea4',
-    },
-    searchContainer: {
-        paddingHorizontal: 20,
-        marginBottom: 20,
-    },
-    listContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    emptyText: {
-        textAlign: 'center',
-        marginTop: 20,
-        color: '#666',
-    },
-    center: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    errorText: {
-        fontSize: 16,
-        color: 'red',
-        marginBottom: 20,
-    }
-});
+  container: {
+    flex: 1,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  listTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+})
